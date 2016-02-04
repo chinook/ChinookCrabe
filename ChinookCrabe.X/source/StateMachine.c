@@ -250,7 +250,7 @@ void StateInit(void)
 //  INIT_WDT;
   INIT_TIMER;
 //  INIT_INPUT_CAPTURE;
-//  INIT_UART;
+  INIT_UART;
 //  INIT_SKADI;
   INIT_SPI;
   INIT_PWM;

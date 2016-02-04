@@ -87,15 +87,68 @@ void main(void)
   
   DRVB_SLEEP = 1;
   DRVB_RESET = 0;
+  
+  UINT16 pwm2 = 500;
+  UINT16 pwm3 = 500;
+  DRVB_SLEEP = 0;
 
-  Pwm.SetDutyCycle(PWM_2, 400);
-  Pwm.SetDutyCycle(PWM_3, 600);
+  Pwm.SetDutyCycle(PWM_2, pwm2);
+  Pwm.SetDutyCycle(PWM_3, pwm3);
 
   WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors at the drive
   LED_ERROR_ON;
+  UINT8 buffer[100] = {0};
+  UINT16 size = 0;
 
 	while(1)  //infinite loop
 	{
+    if (Uart.GetDataByte(UART6) == 'p')
+    {
+      Uart.SendDataByte(UART6, 'p');
+      Uart.SendDataByte(UART6, '\n');
+      Uart.SendDataByte(UART6, '\r');
+      if ( (pwm2 <= 700) && (pwm3 >= 300) )
+      {
+        pwm2 += 50;
+        pwm3 -= 50;
+        Pwm.SetDutyCycle(PWM_2, pwm2);
+        Pwm.SetDutyCycle(PWM_3, pwm3);
+        if (pwm2 != 500)
+        {
+          DRVB_SLEEP = 1;
+        }
+        else
+        {
+          DRVB_SLEEP = 0;
+        }
+      }
+      size = sprintf(buffer, "pwm2 = %d, pwm3 = %d\n\r", pwm2, pwm3);
+      Uart.SendDataBuffer(UART6, buffer, size);
+    }
+    
+    if (Uart.GetDataByte(UART6) == 'm')
+    {
+      Uart.SendDataByte(UART6, 'm');
+      Uart.SendDataByte(UART6, '\n');
+      Uart.SendDataByte(UART6, '\r');
+      if ( (pwm3 <= 700) && (pwm2 >= 300) )
+      {
+        pwm3 += 50;
+        pwm2 -= 50;
+        Pwm.SetDutyCycle(PWM_2, pwm2);
+        Pwm.SetDutyCycle(PWM_3, pwm3);
+        if (pwm2 != 500)
+        {
+          DRVB_SLEEP = 1;
+        }
+        else
+        {
+          DRVB_SLEEP = 0;
+        }
+      }
+      size = sprintf(buffer, "pwm2 = %d, pwm3 = %d\n\r", pwm2, pwm3);
+      Uart.SendDataBuffer(UART6, buffer, size);
+    }
 
 //    Timer.DelayMs(200);
 //    WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors at the drive
