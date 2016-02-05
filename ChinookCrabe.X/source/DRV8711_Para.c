@@ -221,6 +221,10 @@ void InitDriver(void)
 
     WriteDrive(DRVA, CONTROL_Mastw);
     WriteDrive(DRVA, TORQUE_Mastw);
+    WriteDrive(DRVA, OFF_Mastw);
+    WriteDrive(DRVA, BLANK_Mastw);
+    WriteDrive(DRVA, STALL_Mastw);
+    WriteDrive(DRVA, DRIVE_Mastw);
     WriteDrive(DRVA, 0x2180);
     WriteDrive(DRVA, STATUS_Mastw);
   }
