@@ -33,6 +33,18 @@
 #include "..\headers\CommandFunctions.h"
 #include "..\headers\StateFunctions.h"
 
+  UINT8 nSamples = 0;
+  
+  extern volatile BOOL oAdcReady;
+  
+  UINT32 adcData1[10], adcData2[10];
+  
+  UINT32 adcMeanValue1 = 0, adcMeanValue2 = 0;
+  UINT8 i;
+  
+  float crabMm1, crabMm2, crabDeg1, crabDeg2;
+  
+  float adcReal1, adcReal2;
 
 //==============================================================================
 // MAIN CODE
@@ -87,6 +99,8 @@ void main(void)
   
   Adc.EnableInterrupts ();
   Can.EnableInterrupt(CAN1);
+  INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
+  INTEnableInterrupts();
   
   DRVA_SLEEP = 1;
   DRVA_RESET = 0;
@@ -111,30 +125,23 @@ void main(void)
   
   
   
-  UINT8 nSamples = 0;
-  
-  extern volatile BOOL oAdcReady;
-  
-  UINT32 adcData1[10], adcData2[10];
-  
-  UINT32 adcMeanValue1, adcMeanValue2;
-  UINT8 i;
-  
-  float crabMm1, crabMm2, crabDeg1, crabDeg2;
-  
-  float adcReal1, adcReal2;
 
 	while(1)  //infinite loop
 	{
     if (oAdcReady)
     {
       oAdcReady = 0;
-      adcData1[nSamples++] = Adc.Var.adcReadValues[2];
-      adcData2[nSamples++] = Adc.Var.adcReadValues[3];
+      adcData1[nSamples] = Adc.Var.adcReadValues[2];
+      adcData2[nSamples] = Adc.Var.adcReadValues[3];
+      
+      nSamples++;
       
       if (nSamples >= 10)
       {
         nSamples = 0;
+        
+        adcMeanValue1 = 0;
+        adcMeanValue2 = 0;
         
         for (i = 0; i < 10; i++)
         {
@@ -147,15 +154,16 @@ void main(void)
         
 //        adcReal1 = ACTUATOR_MAX_VOLT * (adcMeanValue1 >> 10);
 //        adcReal2 = ACTUATOR_MAX_VOLT * (adcMeanValue2 >> 10);
-        adcReal1 = ACTUATOR_MAX_VOLT * adcMeanValue1 / 256.0;
-        adcReal2 = ACTUATOR_MAX_VOLT * adcMeanValue2 / 256.0;
+        adcReal1 = VREF_PLUS * adcMeanValue1 / 1024.0;
+        adcReal2 = VREF_PLUS * adcMeanValue2 / 1024.0;
         
-        crabMm1 = adcReal1 * ACTUATOR_MAX_POS;
-        crabMm2 = adcReal2 * ACTUATOR_MAX_POS;
-        crabDeg1 = CrabMmToDeg(crabMm1);
-        crabDeg2 = CrabMmToDeg(crabMm2);
+        crabMm1 = adcReal1 / ACTUATOR_MAX_VOLT * (ACTUATOR_MAX_POS - ACTUATOR_MIN_POS);
+        crabMm2 = adcReal2 / ACTUATOR_MAX_VOLT * (ACTUATOR_MAX_POS - ACTUATOR_MIN_POS);
+        CrabMmToDeg(crabMm1, &crabDeg1);
+        CrabMmToDeg(crabMm2, &crabDeg2);
         
-        Can.SendFloat(CAN1, CRAB_DIRECTION_MM_SID, crabMm1);
+        Can.SendFloat(CAN1, 0x21, crabMm1);
+        Can.SendFloat(CAN1, 0x13, crabDeg1);
       }
     }
     

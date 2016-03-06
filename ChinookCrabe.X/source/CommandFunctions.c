@@ -562,10 +562,9 @@ void AssessMastValues (void)
   //============================================================================
 }
 
-float CrabMmToDeg (float mm)
+void CrabMmToDeg (float mm, float *deg)
 {
   UINT8 i, iMm;
-  float deg;
   float slope;
   
   for (i = 0; i < 71; i++)
@@ -577,14 +576,14 @@ float CrabMmToDeg (float mm)
     }
   }
   
-  if (iMm > 0)
-  {
-    deg = (mm - DEG_TO_MM.deg[iMm - 1]) / (DEG_TO_MM.leftMm[iMm] - DEG_TO_MM.leftMm[iMm - 1]) + DEG_TO_MM.deg[iMm - 1];
-  }
-  else
-  {
-    deg = DEG_TO_MM.deg[0];
-  }
+//  if (iMm > 0)
+//  {
+//    deg = (mm - DEG_TO_MM.deg[iMm - 1]) / (DEG_TO_MM.leftMm[iMm] - DEG_TO_MM.leftMm[iMm - 1]) + DEG_TO_MM.deg[iMm - 1];
+//  }
+//  else
+//  {
+//    deg = DEG_TO_MM.deg[0];
+//  }
   
-  return deg;  
+  *deg = DEG_TO_MM.deg[iMm];
 }
