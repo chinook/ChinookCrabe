@@ -26,6 +26,8 @@
       <itemPath>source/SkadiFunctions.c</itemPath>
       <itemPath>source/main.c</itemPath>
       <itemPath>source/StateMachine.c</itemPath>
+      <itemPath>source/StateFunctions.c</itemPath>
+      <itemPath>source/CommandFunctions.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

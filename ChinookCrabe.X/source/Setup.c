@@ -72,7 +72,7 @@ void InitTimer(void)
 //  timerCounterValue = Timer.Open(TIMER_1, 300, SCALE_MS);   // Timer used for regulating the mast. Period = 300 ms
   timerCounterValue = Timer.Open(TIMER_2, 21, SCALE_MS);    // Timer used for input capture AND stopping the mast. Period = 21 ms
 //  timerCounterValue = Timer.Open(TIMER_2, 11, SCALE_MS);    // Timer used for input capture AND stopping the mast. Period = 11 ms
-  timerCounterValue = Timer.Open(TIMER_3, 500, SCALE_US);   // Timer used for PWM. Period = 500 ms (f = 2kHz)
+  timerCounterValue = Timer.Open(TIMER_3, 500, SCALE_US);   // Timer used for PWM. Period = 500 ms (f = 2kHz). Also used for ADC
 //  timerCounterValue = Timer.Open(TIMER_4,  15, SCALE_MS);   // Timer used for sending data to other devices. Period = 15 ms (f ~ 66.67 Hz)
   timerCounterValue = Timer.Open(TIMER_4, 200, SCALE_MS);   // Timer used for sending data to other devices. Period = 200 ms
   timerCounterValue = Timer.Open(TIMER_5, 600, SCALE_MS);   // Timer used for changing mode of operation. Period = 600 ms
@@ -471,12 +471,16 @@ void StartInterrupts(void)
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+// Enable ADC interrupts        
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  Adc.EnableInterrupts ();  // Enable Interrupts for ADC
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // Enable UART interrupts        
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   Uart.EnableRxInterrupts (UART6);  // Enable RX Interrupts for UART6
   Uart.DisableTxInterrupts(UART6);  // Disable TX Interrupts for UART6
-
-//  INTEnable(INT_SOURCE_UART_ERROR(UART6), INT_DISABLED);   // Disable Error interrupts
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -485,4 +489,50 @@ void StartInterrupts(void)
   INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
   INTEnableInterrupts();
 
+}
+
+
+//===========================
+//	INIT ADC
+//===========================
+void InitAdc(void)
+{
+  // Mode of operation. Uncomment the one you need.
+  //================================================
+  UINT32 samplingClk = ADC_CLK_TMR;     // Timer3 used for sampling
+  //================================================
+
+  // Hardware config. These are exemples.
+  //================================================
+  UINT32 configHardware = ADC_VREF_AVDD_AVSS      // Vref+ is AVdd and Vref- is AVss
+                        | ADC_SAMPLES_PER_INT_2;  // 3 samples/interrupt (we check 3 channels)
+  //================================================
+
+  // Port config.
+  //================================================
+
+  UINT32 configPort = ENABLE_AN2_ANA
+                    | ENABLE_AN3_ANA
+                    ;
+  
+  UINT32 configScan = SKIP_SCAN_AN0
+                    | SKIP_SCAN_AN1
+                    | SKIP_SCAN_AN4
+                    | SKIP_SCAN_AN5
+                    | SKIP_SCAN_AN6
+                    | SKIP_SCAN_AN7
+                    | SKIP_SCAN_AN8
+                    | SKIP_SCAN_AN9
+                    | SKIP_SCAN_AN10
+                    | SKIP_SCAN_AN11
+                    | SKIP_SCAN_AN12
+                    | SKIP_SCAN_AN13
+                    | SKIP_SCAN_AN14
+                    | SKIP_SCAN_AN15; // Don't scan the channels that are not enabled by configPort
+  //================================================
+
+  // Open ADC with parameters above
+  Adc.Open(samplingClk, configHardware, configPort, configScan);
+
+  Adc.ConfigInterrupt(ADC_INTERRUPT_PRIORITY, ADC_INTERRUPT_SUBPRIORITY);
 }

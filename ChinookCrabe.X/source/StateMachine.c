@@ -48,6 +48,7 @@ extern volatile BOOL oCapture1
                     ,oCapture2
                     ,oCapture3
                     ,oCapture4
+                    ,oAdcReady
                     ,oNewWindAngle
                     ,oTimerReg
                     ,oTimerSendData
@@ -249,13 +250,14 @@ void StateInit(void)
   INIT_PORTS;
 //  INIT_WDT;
   INIT_TIMER;
+  INIT_ADC;
 //  INIT_INPUT_CAPTURE;
   INIT_UART;
 //  INIT_SKADI;
   INIT_SPI;
   INIT_PWM;
 //  INIT_I2C;
-//  INIT_CAN;
+  INIT_CAN;
 //  START_INTERRUPTS;
 
   // Send ID to backplane by CAN protocol
@@ -505,7 +507,7 @@ void StateSendData(void)
 
   static UINT8 iCounterToTwoSec = 0;
   
-  SEND_MAST_DIRECTION;  // Via CAN bus
+  SEND_CRAB_DIR_DEG;  // Via CAN bus
 
   // DRIVE B
   //==========================================================
@@ -573,6 +575,11 @@ void StateAcq(void)
     nWindAngleSamples++;
     memcpy ((void *) &tempWindAngle, (void *) &rxWindAngle, 4);  // Copy contents of UINT32 into float
     meanWindAngle += tempWindAngle;
+  }
+  
+  if (oAdcReady)
+  {
+    
   }
 
   AssessButtons();

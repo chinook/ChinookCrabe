@@ -85,6 +85,9 @@ void main(void)
   
   StateInit();
   
+  Adc.EnableInterrupts ();
+  Can.EnableInterrupt(CAN1);
+  
   DRVA_SLEEP = 1;
   DRVA_RESET = 0;
   DRVB_SLEEP = 1;
@@ -105,64 +108,112 @@ void main(void)
   LED_ERROR_ON;
   UINT8 buffer[100] = {0};
   UINT16 size = 0;
+  
+  
+  
+  UINT8 nSamples = 0;
+  
+  extern volatile BOOL oAdcReady;
+  
+  UINT32 adcData1[10], adcData2[10];
+  
+  UINT32 adcMeanValue1, adcMeanValue2;
+  UINT8 i;
+  
+  float crabMm1, crabMm2, crabDeg1, crabDeg2;
+  
+  float adcReal1, adcReal2;
 
 	while(1)  //infinite loop
 	{
-    if (Uart.GetDataByte(UART6) == 'p')
+    if (oAdcReady)
     {
-      Uart.SendDataByte(UART6, 'p');
-      Uart.SendDataByte(UART6, '\n');
-      Uart.SendDataByte(UART6, '\r');
-      if ( (pwm2 <= 700) && (pwm3 >= 300) )
+      oAdcReady = 0;
+      adcData1[nSamples++] = Adc.Var.adcReadValues[2];
+      adcData2[nSamples++] = Adc.Var.adcReadValues[3];
+      
+      if (nSamples >= 10)
       {
-        pwm2 += 50;
-        pwm3 -= 50;
-        Pwm.SetDutyCycle(PWM_2, pwm2);
-        Pwm.SetDutyCycle(PWM_3, pwm3);
-        Pwm.SetDutyCycle(PWM_4, pwm2);
-        Pwm.SetDutyCycle(PWM_5, pwm3);
-        if (pwm2 != 500)
+        nSamples = 0;
+        
+        for (i = 0; i < 10; i++)
         {
-          DRVB_SLEEP = 1;
-          DRVA_SLEEP = 1;
+          adcMeanValue1 += adcData1[i];
+          adcMeanValue2 += adcData2[i];
         }
-        else
-        {
-          DRVB_SLEEP = 0;
-          DRVA_SLEEP = 0;
-        }
+        
+        adcMeanValue1 = adcMeanValue1 / 10.0f + 0.5;
+        adcMeanValue2 = adcMeanValue2 / 10.0f + 0.5;
+        
+//        adcReal1 = ACTUATOR_MAX_VOLT * (adcMeanValue1 >> 10);
+//        adcReal2 = ACTUATOR_MAX_VOLT * (adcMeanValue2 >> 10);
+        adcReal1 = ACTUATOR_MAX_VOLT * adcMeanValue1 / 256.0;
+        adcReal2 = ACTUATOR_MAX_VOLT * adcMeanValue2 / 256.0;
+        
+        crabMm1 = adcReal1 * ACTUATOR_MAX_POS;
+        crabMm2 = adcReal2 * ACTUATOR_MAX_POS;
+        crabDeg1 = CrabMmToDeg(crabMm1);
+        crabDeg2 = CrabMmToDeg(crabMm2);
+        
+        Can.SendFloat(CAN1, CRAB_DIRECTION_MM_SID, crabMm1);
       }
-      size = sprintf(buffer, "pwm2 = %d, pwm3 = %d\n\r", pwm2, pwm3);
-      Uart.SendDataBuffer(UART6, buffer, size);
     }
     
-    if (Uart.GetDataByte(UART6) == 'm')
-    {
-      Uart.SendDataByte(UART6, 'm');
-      Uart.SendDataByte(UART6, '\n');
-      Uart.SendDataByte(UART6, '\r');
-      if ( (pwm3 <= 700) && (pwm2 >= 300) )
-      {
-        pwm3 += 50;
-        pwm2 -= 50;
-        Pwm.SetDutyCycle(PWM_2, pwm2);
-        Pwm.SetDutyCycle(PWM_3, pwm3);
-        Pwm.SetDutyCycle(PWM_4, pwm2);
-        Pwm.SetDutyCycle(PWM_5, pwm3);
-        if (pwm2 != 500)
-        {
-          DRVB_SLEEP = 1;
-          DRVA_SLEEP = 1;
-        }
-        else
-        {
-          DRVB_SLEEP = 0;
-          DRVA_SLEEP = 0;
-        }
-      }
-      size = sprintf(buffer, "pwm2 = %d, pwm3 = %d\n\r", pwm2, pwm3);
-      Uart.SendDataBuffer(UART6, buffer, size);
-    }
+//    if (Uart.GetDataByte(UART6) == 'p')
+//    {
+//      Uart.SendDataByte(UART6, 'p');
+//      Uart.SendDataByte(UART6, '\n');
+//      Uart.SendDataByte(UART6, '\r');
+//      if ( (pwm2 <= 700) && (pwm3 >= 300) )
+//      {
+//        pwm2 += 50;
+//        pwm3 -= 50;
+//        Pwm.SetDutyCycle(PWM_2, pwm2);
+//        Pwm.SetDutyCycle(PWM_3, pwm3);
+//        Pwm.SetDutyCycle(PWM_4, pwm2);
+//        Pwm.SetDutyCycle(PWM_5, pwm3);
+//        if (pwm2 != 500)
+//        {
+//          DRVB_SLEEP = 1;
+//          DRVA_SLEEP = 1;
+//        }
+//        else
+//        {
+//          DRVB_SLEEP = 0;
+//          DRVA_SLEEP = 0;
+//        }
+//      }
+//      size = sprintf(buffer, "pwm2 = %d, pwm3 = %d\n\r", pwm2, pwm3);
+//      Uart.SendDataBuffer(UART6, buffer, size);
+//    }
+//    
+//    if (Uart.GetDataByte(UART6) == 'm')
+//    {
+//      Uart.SendDataByte(UART6, 'm');
+//      Uart.SendDataByte(UART6, '\n');
+//      Uart.SendDataByte(UART6, '\r');
+//      if ( (pwm3 <= 700) && (pwm2 >= 300) )
+//      {
+//        pwm3 += 50;
+//        pwm2 -= 50;
+//        Pwm.SetDutyCycle(PWM_2, pwm2);
+//        Pwm.SetDutyCycle(PWM_3, pwm3);
+//        Pwm.SetDutyCycle(PWM_4, pwm2);
+//        Pwm.SetDutyCycle(PWM_5, pwm3);
+//        if (pwm2 != 500)
+//        {
+//          DRVB_SLEEP = 1;
+//          DRVA_SLEEP = 1;
+//        }
+//        else
+//        {
+//          DRVB_SLEEP = 0;
+//          DRVA_SLEEP = 0;
+//        }
+//      }
+//      size = sprintf(buffer, "pwm2 = %d, pwm3 = %d\n\r", pwm2, pwm3);
+//      Uart.SendDataBuffer(UART6, buffer, size);
+//    }
 
 //    Timer.DelayMs(200);
 //    WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors at the drive

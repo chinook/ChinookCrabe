@@ -99,7 +99,7 @@ typedef union
  * | 4        | 2           |                   |
  * | 4        | 3           | SPI 4             |
  * |----------+-------------+-------------------|
- * | 5        | 0           |                   |
+ * | 5        | 0           | ADC               |
  * | 5        | 1           |                   |
  * | 5        | 2           | I2C 4             |
  * | 5        | 3           |                   |
@@ -175,6 +175,16 @@ typedef union
 #define IC2_INTERRUPT_SUBPRIORITY       2
 #define IC3_INTERRUPT_SUBPRIORITY       1
 #define IC4_INTERRUPT_SUBPRIORITY       3
+//===============================================
+
+
+//===============================================
+// ADC interrupts priorities and subpriorities
+//===============================================
+#define ADC_INTERRUPT_PRIORITY          5           // Used in ChinookLib function
+#define ADC_INT_PRIORITY                ipl5auto    // Used in ISR
+
+#define ADC_INTERRUPT_SUBPRIORITY       0           
 //===============================================
 
 

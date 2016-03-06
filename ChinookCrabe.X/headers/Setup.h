@@ -47,6 +47,7 @@ struct sChinook Chinook;            // Contains all ChinookLib functions
 void InitTimer        (void);
 void InitPwm          (void);
 void InitPorts        (void);
+void InitAdc          (void);
 void InitCan          (void);
 void InitSpi          (void);
 void InitUart         (void);
@@ -73,6 +74,7 @@ void StartInterrupts  (void);
 #define INIT_SPI            InitSpi()
 #define INIT_UART           InitUart()
 #define INIT_I2C            InitI2c()
+#define INIT_ADC            InitAdc()
 #define INIT_SKADI          InitSkadi()
 #define INIT_WDT            InitWdt()
 #define INIT_INPUT_CAPTURE  InitInputCapture()
@@ -287,28 +289,34 @@ BYTE Can1MessageFifoArea [ CAN_NB_CHANNELS     // Space used by CAN
                          * CAN_TX_RX_MESSAGE_SIZE_BYTES
                          ];
 
-#define MAST_BOARD_SID                0x30
-#define MAST_DISCONNECT_SID           0x31
-#define MAST_DIRECTION_SID            0x32
-#define MAST_MODE_SID                 0x33
-#define MAST_CALIB_DONE_SID           0x34
+#define CRAB_BOARD_SID                0x80
+#define CRAB_DISCONNECT_SID           0x81
+#define CRAB_DIRECTION_DEG_SID        0x82
+#define CRAB_MODE_SID                 0x83
+#define CRAB_CALIB_DONE_SID           0x84
+#define CRAB_CALIB_DONE_SID           0x84
+#define CRAB_DIRECTION_MM_SID         0x85
+
 #define IDENTIFICATION_TO_BACKPLANE   0x70
 #define DISCONNECT_FROM_BACKPLANE     0x71
 
 // Message 0 : Identification
-#define SEND_ID_TO_BACKPLANE          Can.SendByte(CAN1, IDENTIFICATION_TO_BACKPLANE, MAST_BOARD_SID)
+#define SEND_ID_TO_BACKPLANE          Can.SendByte(CAN1, IDENTIFICATION_TO_BACKPLANE, CRAB_BOARD_SID)
 
 // Message 1 : Disconnect
-#define SEND_DISCONNECT_TO_BACKPLANE  Can.SendByte(CAN1, DISCONNECT_FROM_BACKPLANE, MAST_DISCONNECT_SID)
+#define SEND_DISCONNECT_TO_BACKPLANE  Can.SendByte(CAN1, DISCONNECT_FROM_BACKPLANE, CRAB_DISCONNECT_SID)
 
-// Message 2 : Mast orientation
-#define SEND_MAST_DIRECTION           Can.SendFloat(CAN1, MAST_DIRECTION_SID, mastAngle.currentValue)
+// Message 2 : Crab orientation in degree
+#define SEND_CRAB_DIR_DEG             Can.SendFloat(CAN1, CRAB_DIRECTION_DEG_SID, mastAngle.currentValue)
 
-// Message 3 : Mast mode of operation
-#define SEND_MODE_TO_STEERING_WHEEL   Can.SendByte(CAN1, MAST_MODE_SID, (BYTE) oManualMode)
+// Message 3 : Crab mode of operation
+#define SEND_MODE_TO_STEERING_WHEEL   Can.SendByte(CAN1, CRAB_MODE_SID, (BYTE) oManualMode)
 
-// Message 4 : Mast calib done
-#define SEND_CALIB_DONE               Can.SendByte(CAN1, MAST_CALIB_DONE_SID, 1)
+// Message 4 : Crab calib done
+#define SEND_CALIB_DONE               Can.SendByte(CAN1, CRAB_CALIB_DONE_SID, 1)
+
+// Message 5 : Crab orientation in mm
+#define SEND_CRAB_DIR_MM              Can.SendFloat(CAN1, CRAB_DIRECTION_MM_SID, mastAngle.currentValue)
 
 
 #endif	/* __SETUP_H__ */
