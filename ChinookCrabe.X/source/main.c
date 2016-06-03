@@ -120,52 +120,139 @@ void main(void)
   WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors at the drive
   WriteDrive(DRVA, STATUS_Mastw);   // Reset any errors at the drive
   LED_ERROR_ON;
-  UINT8 buffer[100] = {0};
+  INT16 buffer[100] = {0};
+  UINT8 buffer8[100] = {0};
   UINT16 size = 0;
   
+  UINT8 helloString[] = "\n\rType any key to begin\n\r\0";
   
+  memcpy(buffer8, helloString, sizeof(helloString));
+  
+  Uart.SendDataBuffer(UART6, buffer8, sizeof(helloString));
+  
+  buffer[0] = 0;
+  
+  while (buffer[0] == 0)
+  {
+    buffer[0] = Uart.GetDataByte(UART6);
+    if (buffer[0] < 0)
+    {
+      buffer[0] = 0;
+    }
+    else
+    {
+      Uart.SendDataByte(UART6, buffer[0]);
+    }
+  }
+  
+  UINT16 adcValue = 0;
+  float adcRealValue = 0;
+  
+  UINT8 msgV[] = "\n\rTension = \0";
+  UINT8 msgVfloat[33] = {0};
+  UINT8 msgEnter[] = "\n\r\0";
+  
+  UINT8 sizeMsgEnter = sizeof(msgEnter);
+  UINT8 sizeMsgV = sizeof(msgV);
+  
+  pwm2 = 480;
+  pwm3 = 520;
+  Pwm.SetDutyCycle(PWM_2, pwm2);  // DRVB
+  Pwm.SetDutyCycle(PWM_3, pwm3);
+  Pwm.SetDutyCycle(PWM_4, pwm2);  // DRVA
+  Pwm.SetDutyCycle(PWM_5, pwm3);
+  DRVA_SLEEP = 1;
+  DRVB_SLEEP = 1;
+  
+  while(1);
+  
+#define ADC_VOLT_RES  0.1f
+  
+//  float adcNextValue = ADC_VOLT_RES;
+  float adcNextValue = 1;
   
 
 	while(1)  //infinite loop
 	{
     if (oAdcReady)
     {
-      oAdcReady = 0;
-      adcData1[nSamples] = Adc.Var.adcReadValues[2];
-      adcData2[nSamples] = Adc.Var.adcReadValues[3];
+      adcValue = Adc.Var.adcReadValues[2];
+      adcRealValue = adcValue * VREF_PLUS / 1023;
       
-      nSamples++;
-      
-      if (nSamples >= 10)
+      if (adcRealValue >= adcNextValue)
       {
-        nSamples = 0;
+        DRVA_SLEEP = 0;
+        pwm2 = 500;
+        pwm3 = 500;
+        Pwm.SetDutyCycle(PWM_2, pwm2);
+        Pwm.SetDutyCycle(PWM_3, pwm3);
+        WriteDrive(DRVA, STATUS_Mastw);
         
-        adcMeanValue1 = 0;
-        adcMeanValue2 = 0;
+        Uart.SendDataBuffer(UART6, msgV, sizeMsgV);
+        memcpy(&msgVfloat[0], (void *) &adcRealValue, 32);
+        Uart.SendDataBuffer(UART6, msgVfloat, 33);
+        Uart.SendDataBuffer(UART6, msgEnter, sizeMsgEnter);
         
-        for (i = 0; i < 10; i++)
+        if (adcNextValue < 3)
         {
-          adcMeanValue1 += adcData1[i];
-          adcMeanValue2 += adcData2[i];
+          adcNextValue += ADC_VOLT_RES;
         }
         
-        adcMeanValue1 = adcMeanValue1 / 10.0f + 0.5;
-        adcMeanValue2 = adcMeanValue2 / 10.0f + 0.5;
+        buffer[0] = 0;
+        while (buffer[0] == 0)
+        {
+          buffer[0] = Uart.GetDataByte(UART6);
+          if (buffer[0] < 0)
+          {
+            buffer[0] = 0;
+          }
+        }
         
-//        adcReal1 = ACTUATOR_MAX_VOLT * (adcMeanValue1 >> 10);
-//        adcReal2 = ACTUATOR_MAX_VOLT * (adcMeanValue2 >> 10);
-        adcReal1 = VREF_PLUS * adcMeanValue1 / 1024.0;
-        adcReal2 = VREF_PLUS * adcMeanValue2 / 1024.0;
-        
-        crabMm1 = adcReal1 / ACTUATOR_MAX_VOLT * (ACTUATOR_MAX_POS - ACTUATOR_MIN_POS);
-        crabMm2 = adcReal2 / ACTUATOR_MAX_VOLT * (ACTUATOR_MAX_POS - ACTUATOR_MIN_POS);
-        CrabMmToDeg(crabMm1, &crabDeg1);
-        CrabMmToDeg(crabMm2, &crabDeg2);
-        
-        Can.SendFloat(CAN1, 0x21, crabMm1);
-        Can.SendFloat(CAN1, 0x13, crabDeg1);
+        pwm2 = 600;
+        pwm3 = 400;
+        DRVA_SLEEP = 1;
+        Pwm.SetDutyCycle(PWM_2, pwm2);
+        Pwm.SetDutyCycle(PWM_3, pwm3);
       }
     }
+//    if (oAdcReady)
+//    {
+//      oAdcReady = 0;
+//      adcData1[nSamples] = Adc.Var.adcReadValues[2];
+//      adcData2[nSamples] = Adc.Var.adcReadValues[3];
+//      
+//      nSamples++;
+//      
+//      if (nSamples >= 10)
+//      {
+//        nSamples = 0;
+//        
+//        adcMeanValue1 = 0;
+//        adcMeanValue2 = 0;
+//        
+//        for (i = 0; i < 10; i++)
+//        {
+//          adcMeanValue1 += adcData1[i];
+//          adcMeanValue2 += adcData2[i];
+//        }
+//        
+//        adcMeanValue1 = adcMeanValue1 / 10.0f + 0.5;
+//        adcMeanValue2 = adcMeanValue2 / 10.0f + 0.5;
+//        
+////        adcReal1 = ACTUATOR_MAX_VOLT * (adcMeanValue1 >> 10);
+////        adcReal2 = ACTUATOR_MAX_VOLT * (adcMeanValue2 >> 10);
+//        adcReal1 = VREF_PLUS * adcMeanValue1 / 1024.0;
+//        adcReal2 = VREF_PLUS * adcMeanValue2 / 1024.0;
+//        
+//        crabMm1 = adcReal1 / ACTUATOR_MAX_VOLT * (ACTUATOR_MAX_POS - ACTUATOR_MIN_POS);
+//        crabMm2 = adcReal2 / ACTUATOR_MAX_VOLT * (ACTUATOR_MAX_POS - ACTUATOR_MIN_POS);
+//        CrabMmToDeg(crabMm1, &crabDeg1);
+//        CrabMmToDeg(crabMm2, &crabDeg2);
+//        
+//        Can.SendFloat(CAN1, 0x21, crabMm1);
+//        Can.SendFloat(CAN1, 0x13, crabDeg1);
+//      }
+//    }
     
 //    if (Uart.GetDataByte(UART6) == 'p')
 //    {
