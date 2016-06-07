@@ -35,7 +35,7 @@
 
   UINT8 nSamples = 0;
   
-  extern volatile BOOL oAdcReady;
+  extern volatile BOOL oAdcReady, oTimerReg;
   
   UINT32 adcData1[10], adcData2[10];
   
@@ -99,6 +99,7 @@ void main(void)
   
   Adc.EnableInterrupts ();
   Can.EnableInterrupt(CAN1);
+  Timer.EnableInterrupt(TIMER_1);
   INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
   INTEnableInterrupts();
   
@@ -121,7 +122,7 @@ void main(void)
   WriteDrive(DRVA, STATUS_Mastw);   // Reset any errors at the drive
   LED_ERROR_ON;
   INT16 buffer[100] = {0};
-  UINT8 buffer8[100] = {0};
+  UINT8 buffer8[200] = {0};
   UINT16 size = 0;
   
   UINT8 helloString[] = "\n\rType any key to begin\n\r\0";
@@ -142,6 +143,8 @@ void main(void)
     else
     {
       Uart.SendDataByte(UART6, buffer[0]);
+      Uart.SendDataByte(UART6, '\n');
+      Uart.SendDataByte(UART6, '\r');
     }
   }
   
@@ -155,47 +158,66 @@ void main(void)
   UINT8 sizeMsgEnter = sizeof(msgEnter);
   UINT8 sizeMsgV = sizeof(msgV);
   
-  pwm2 = 480;
-  pwm3 = 520;
+  pwm2 = 515;   // Expand
+  pwm3 = 485;
+//  pwm2 = 485;   // Shrink
+//  pwm3 = 515;
   Pwm.SetDutyCycle(PWM_2, pwm2);  // DRVB
   Pwm.SetDutyCycle(PWM_3, pwm3);
-  Pwm.SetDutyCycle(PWM_4, pwm2);  // DRVA
-  Pwm.SetDutyCycle(PWM_5, pwm3);
-  DRVA_SLEEP = 1;
   DRVB_SLEEP = 1;
+//  Pwm.SetDutyCycle(PWM_4, pwm2);  // DRVA
+//  Pwm.SetDutyCycle(PWM_5, pwm3);
+//  DRVA_SLEEP = 1;
   
-  while(1);
+//  while(1);
   
-#define ADC_VOLT_RES  0.1f
+#define ADC_VOLT_RES  0.002f
   
 //  float adcNextValue = ADC_VOLT_RES;
-  float adcNextValue = 1;
+  float adcNextValue = 1.5;
+  
+  UINT32 sizeOfString = 0;
   
 
 	while(1)  //infinite loop
 	{
+    if (oTimerReg)
+    {
+      oTimerReg = 0;
+      WriteDrive(DRVB, STATUS_Mastw);
+    }
     if (oAdcReady)
     {
       adcValue = Adc.Var.adcReadValues[2];
       adcRealValue = adcValue * VREF_PLUS / 1023;
       
       if (adcRealValue >= adcNextValue)
+//      if (adcRealValue <= adcNextValue)
       {
-        DRVA_SLEEP = 0;
+//        DRVA_SLEEP = 0;
+        DRVB_SLEEP = 0;
         pwm2 = 500;
         pwm3 = 500;
+//        Pwm.SetDutyCycle(PWM_4, pwm2);
+//        Pwm.SetDutyCycle(PWM_5, pwm3);
+//        WriteDrive(DRVA, STATUS_Mastw);
         Pwm.SetDutyCycle(PWM_2, pwm2);
         Pwm.SetDutyCycle(PWM_3, pwm3);
-        WriteDrive(DRVA, STATUS_Mastw);
+        WriteDrive(DRVB, STATUS_Mastw);
         
-        Uart.SendDataBuffer(UART6, msgV, sizeMsgV);
-        memcpy(&msgVfloat[0], (void *) &adcRealValue, 32);
-        Uart.SendDataBuffer(UART6, msgVfloat, 33);
-        Uart.SendDataBuffer(UART6, msgEnter, sizeMsgEnter);
+        sizeOfString = sprintf(&buffer8[0], "\n\rTension = %f\n\r", adcRealValue);
+        
+        Uart.SendDataBuffer(UART6, buffer8, sizeOfString);
+//        Uart.SendDataBuffer(UART6, msgV, sizeMsgV);
+//        memcpy(&msgVfloat[0], (void *) &adcRealValue, 32);
+//        Uart.SendDataBuffer(UART6, msgVfloat, 33);
+//        Uart.SendDataBuffer(UART6, msgEnter, sizeMsgEnter);
         
         if (adcNextValue < 3)
+//        if (adcNextValue > 0.5)
         {
           adcNextValue += ADC_VOLT_RES;
+//          adcNextValue -= ADC_VOLT_RES;
         }
         
         buffer[0] = 0;
@@ -206,13 +228,24 @@ void main(void)
           {
             buffer[0] = 0;
           }
+          else
+          {
+            Uart.SendDataByte(UART6, buffer[0]);
+            Uart.SendDataByte(UART6, '\n');
+            Uart.SendDataByte(UART6, '\r');
+          }
         }
         
-        pwm2 = 600;
-        pwm3 = 400;
-        DRVA_SLEEP = 1;
+        pwm2 = 515;   // Expand
+        pwm3 = 485;
+//        pwm2 = 485;   // Shrink
+//        pwm3 = 515;
+//        DRVA_SLEEP = 1;
+//        Pwm.SetDutyCycle(PWM_4, pwm2);
+//        Pwm.SetDutyCycle(PWM_5, pwm3);
         Pwm.SetDutyCycle(PWM_2, pwm2);
         Pwm.SetDutyCycle(PWM_3, pwm3);
+        DRVB_SLEEP = 1;
       }
     }
 //    if (oAdcReady)

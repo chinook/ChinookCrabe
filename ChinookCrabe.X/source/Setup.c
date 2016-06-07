@@ -68,7 +68,7 @@ void InitTimer(void)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //	Open timers
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  timerCounterValue = Timer.Open(TIMER_1, 100, SCALE_MS);   // Timer used for regulating the mast. Period = 100 ms
+  timerCounterValue = Timer.Open(TIMER_1, 500, SCALE_MS);   // Timer used for regulating the mast. Period = 100 ms
 //  timerCounterValue = Timer.Open(TIMER_1, 300, SCALE_MS);   // Timer used for regulating the mast. Period = 300 ms
   timerCounterValue = Timer.Open(TIMER_2, 21, SCALE_MS);    // Timer used for input capture AND stopping the mast. Period = 21 ms
 //  timerCounterValue = Timer.Open(TIMER_2, 11, SCALE_MS);    // Timer used for input capture AND stopping the mast. Period = 11 ms
