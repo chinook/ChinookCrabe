@@ -158,10 +158,10 @@ void main(void)
   UINT8 sizeMsgEnter = sizeof(msgEnter);
   UINT8 sizeMsgV = sizeof(msgV);
   
-  pwm2 = 515;   // Expand
-  pwm3 = 485;
-//  pwm2 = 485;   // Shrink
-//  pwm3 = 515;
+//  pwm2 = 515;   // Expand
+//  pwm3 = 485;
+  pwm2 = 485;   // Shrink
+  pwm3 = 515;
   Pwm.SetDutyCycle(PWM_2, pwm2);  // DRVB
   Pwm.SetDutyCycle(PWM_3, pwm3);
   DRVB_SLEEP = 1;
@@ -174,7 +174,7 @@ void main(void)
 #define ADC_VOLT_RES  0.002f
   
 //  float adcNextValue = ADC_VOLT_RES;
-  float adcNextValue = 1.5;
+  float adcNextValue = 2.7;
   
   UINT32 sizeOfString = 0;
   
@@ -191,8 +191,8 @@ void main(void)
       adcValue = Adc.Var.adcReadValues[2];
       adcRealValue = adcValue * VREF_PLUS / 1023;
       
-      if (adcRealValue >= adcNextValue)
-//      if (adcRealValue <= adcNextValue)
+//      if (adcRealValue >= adcNextValue)
+      if (adcRealValue <= adcNextValue)
       {
 //        DRVA_SLEEP = 0;
         DRVB_SLEEP = 0;
@@ -213,11 +213,11 @@ void main(void)
 //        Uart.SendDataBuffer(UART6, msgVfloat, 33);
 //        Uart.SendDataBuffer(UART6, msgEnter, sizeMsgEnter);
         
-        if (adcNextValue < 3)
-//        if (adcNextValue > 0.5)
+//        if (adcNextValue < 3)
+        if (adcNextValue > 0.5)
         {
-          adcNextValue += ADC_VOLT_RES;
-//          adcNextValue -= ADC_VOLT_RES;
+//          adcNextValue += ADC_VOLT_RES;
+          adcNextValue -= ADC_VOLT_RES;
         }
         
         buffer[0] = 0;
@@ -236,10 +236,10 @@ void main(void)
           }
         }
         
-        pwm2 = 515;   // Expand
-        pwm3 = 485;
-//        pwm2 = 485;   // Shrink
-//        pwm3 = 515;
+//        pwm2 = 515;   // Expand
+//        pwm3 = 485;
+        pwm2 = 485;   // Shrink
+        pwm3 = 515;
 //        DRVA_SLEEP = 1;
 //        Pwm.SetDutyCycle(PWM_4, pwm2);
 //        Pwm.SetDutyCycle(PWM_5, pwm3);
