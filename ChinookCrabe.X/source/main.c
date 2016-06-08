@@ -152,11 +152,7 @@ void main(void)
   float adcRealValue = 0;
   
   UINT8 msgV[] = "\n\rTension = \0";
-  UINT8 msgVfloat[33] = {0};
   UINT8 msgEnter[] = "\n\r\0";
-  
-  UINT8 sizeMsgEnter = sizeof(msgEnter);
-  UINT8 sizeMsgV = sizeof(msgV);
   
 //  pwm2 = 515;   // Expand
 //  pwm3 = 485;
@@ -169,11 +165,8 @@ void main(void)
 //  Pwm.SetDutyCycle(PWM_5, pwm3);
 //  DRVA_SLEEP = 1;
   
-//  while(1);
-  
 #define ADC_VOLT_RES  0.002f
   
-//  float adcNextValue = ADC_VOLT_RES;
   float adcNextValue = 2.7;
   
   UINT32 sizeOfString = 0;
@@ -191,33 +184,29 @@ void main(void)
       adcValue = Adc.Var.adcReadValues[2];
       adcRealValue = adcValue * VREF_PLUS / 1023;
       
-//      if (adcRealValue >= adcNextValue)
-      if (adcRealValue <= adcNextValue)
+//      if (adcRealValue >= adcNextValue)   // Expand
+      if (adcRealValue <= adcNextValue)   // Shrink
       {
 //        DRVA_SLEEP = 0;
         DRVB_SLEEP = 0;
         pwm2 = 500;
         pwm3 = 500;
-//        Pwm.SetDutyCycle(PWM_4, pwm2);
+//        Pwm.SetDutyCycle(PWM_4, pwm2);  // DRVA
 //        Pwm.SetDutyCycle(PWM_5, pwm3);
 //        WriteDrive(DRVA, STATUS_Mastw);
-        Pwm.SetDutyCycle(PWM_2, pwm2);
+        Pwm.SetDutyCycle(PWM_2, pwm2);    // DRVB
         Pwm.SetDutyCycle(PWM_3, pwm3);
         WriteDrive(DRVB, STATUS_Mastw);
         
         sizeOfString = sprintf(&buffer8[0], "\n\rTension = %f\n\r", adcRealValue);
         
         Uart.SendDataBuffer(UART6, buffer8, sizeOfString);
-//        Uart.SendDataBuffer(UART6, msgV, sizeMsgV);
-//        memcpy(&msgVfloat[0], (void *) &adcRealValue, 32);
-//        Uart.SendDataBuffer(UART6, msgVfloat, 33);
-//        Uart.SendDataBuffer(UART6, msgEnter, sizeMsgEnter);
         
-//        if (adcNextValue < 3)
-        if (adcNextValue > 0.5)
+//        if (adcNextValue < 3)   // Expand
+        if (adcNextValue > 0.5) // Shrink
         {
-//          adcNextValue += ADC_VOLT_RES;
-          adcNextValue -= ADC_VOLT_RES;
+//          adcNextValue += ADC_VOLT_RES; // Expand
+          adcNextValue -= ADC_VOLT_RES; // Shrink
         }
         
         buffer[0] = 0;
