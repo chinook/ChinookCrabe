@@ -90,19 +90,19 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 
 /******* TRANSITION CONDITION CALIB **********/
-#define CALIB_2_ACQ           1
+#define CALIB_2_ACQ           0//1
 
 
 /******* TRANSITION CONDITION ACQ **********/
-#define ACQ_2_MANUAL           MANUAL_MODE && MANUAL_FLAG_CHANGE
+#define ACQ_2_MANUAL           0//MANUAL_MODE && MANUAL_FLAG_CHANGE
 #define ACQ_2_DISCONNECT       DISCONNECT_OK
-#define ACQ_2_REG             !MANUAL_MODE && REG_TIMER_OK
-#define ACQ_2_GET_MAST_DATA    MANUAL_MODE && REG_TIMER_OK
+#define ACQ_2_REG              0//!MANUAL_MODE && REG_TIMER_OK
+#define ACQ_2_GET_MAST_DATA    0//MANUAL_MODE && REG_TIMER_OK
 #define ACQ_2_SEND_DATA        SEND_DATA_TIMER_OK
 
 
 /******* TRANSITION CONDITION GET MAST DATA **********/
-#define GET_MAST_DATA_2_ACQ    1
+#define GET_MAST_DATA_2_ACQ    0//1
 
 
 /******* TRANSITION CONDITION SEND DATA **********/
@@ -110,7 +110,7 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 
 /******* TRANSITION CONDITION MANUAL **********/
-#define MANUAL_2_ACQ           1
+#define MANUAL_2_ACQ           0//1
 
 
 /******* TRANSITION CONDITION REG **********/
@@ -118,11 +118,11 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 
 /******* TRANSITION CONDITION DISCONNECT **********/
-#define DISCONNECT_2_CLOSE     1
+#define DISCONNECT_2_CLOSE     0//1
 
 
 /******* TRANSITION CONDITION CLOSE **********/
-#define CLOSE_2_IDLE           1
+#define CLOSE_2_IDLE           0//1
 
 
 /******* TRANSITION CONDITION IDLE **********/

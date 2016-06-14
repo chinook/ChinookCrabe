@@ -61,7 +61,7 @@ typedef struct sCmdValue
 /*
  * Actuator degree to mm table
  */
-typedef struct sDegToMm
+typedef struct sMmToDeg
 {
   float deg [71];
   
@@ -71,7 +71,23 @@ typedef struct sDegToMm
   float rightMm [71];
   float rightZero;
   
-} sDegToMm_t;
+} sMmToDeg_t;
+
+typedef struct sVoltToMm
+{
+  float leftVolt[174];
+  float rightVolt[196];
+  UINT16 leftBit[174];
+  UINT16 rightBit[196];
+  float leftMm[174];
+  float rightMm[196];
+} sVoltToMm_t;
+
+typedef enum
+{
+  LEFT_ACTUATOR
+ ,RIGHT_ACTUATOR
+} CrabActuator_t;
 
 
 //==============================================================================
@@ -86,7 +102,12 @@ void Regulator  (void);
 void AssessMastValues (void);
 // =======================================
 
-void CrabMmToDeg (float mm, float *deg);
+void Interpol2D (float x0, float y0, float x1, float y1, float x, float *y);
+void CrabVoltToMm (float volt, float *mm, CrabActuator_t act);
+void CrabDegToMm (float deg, float *mm, CrabActuator_t act);
+void CrabMmToDeg (float mm, float *deg, CrabActuator_t act);
+void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act);
+
 
 // Various MATH functions
 #define ABS(x)  ( (x >= 0)?  x : -x )

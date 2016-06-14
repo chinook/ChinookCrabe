@@ -28,6 +28,14 @@ extern volatile sButtonStates_t buttons;
 
 extern volatile UINT32 rxWindAngle;
 
+float crabManualCmd = 0;
+
+float  leftActPos
+      ,rightActPos
+      ,leftActDeg
+      ,rightActDeg
+      ;
+
 
 // Used for the average of the wind angle
 //========================================
@@ -251,17 +259,16 @@ void StateInit(void)
 //  INIT_WDT;
   INIT_TIMER;
   INIT_ADC;
-//  INIT_INPUT_CAPTURE;
   INIT_UART;
 //  INIT_SKADI;
   INIT_SPI;
   INIT_PWM;
 //  INIT_I2C;
   INIT_CAN;
-//  START_INTERRUPTS;
+  START_INTERRUPTS;
 
   // Send ID to backplane by CAN protocol
-//  SEND_ID_TO_BACKPLANE;
+  SEND_ID_TO_BACKPLANE;
 
 //  Timer.DelayMs(10);
   
@@ -278,6 +285,27 @@ void StateInit(void)
 
   // Init registers for the drive
   InitDriver();
+  
+  DRVA_SLEEP = 1;
+  DRVA_RESET = 0;
+  DRVB_SLEEP = 1;
+  DRVB_RESET = 0;
+  
+  UINT16 pwm2 = 500
+        ,pwm3 = 500
+        ,pwm4 = 500
+        ,pwm5 = 500
+        ;
+  DRVA_SLEEP = 0;
+  DRVB_SLEEP = 0;
+
+  Pwm.SetDutyCycle(PWM_2, pwm2);    // DRVB
+  Pwm.SetDutyCycle(PWM_3, pwm3);
+  Pwm.SetDutyCycle(PWM_4, pwm4);    // DRVA
+  Pwm.SetDutyCycle(PWM_5, pwm5);
+
+  WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors at the drive
+  WriteDrive(DRVA, STATUS_Mastw);   // Reset any errors at the drive
 }
 
 
@@ -287,41 +315,7 @@ void StateInit(void)
 //===============================================================
 void StateManual(void)
 {
-  oManualFlagChng = 0;
-
-  if (!oManualMastLeft && !oManualMastRight)
-  {
-    if (MAST_MIN_OK && MAST_MAX_OK)   // Stop has not been done yet
-    {
-      MastManualStop();
-    }
-  }
-  else if (oManualMastLeft)
-  {
-    if (!MAST_MIN_OK)   // Mast too far
-    {
-//      MastManualStop();   Do nothing
-    }
-    else
-    {
-      MastManualLeft();
-    }
-  }
-  else if (oManualMastRight)
-  {
-    if (!MAST_MAX_OK)   // Mast too far
-    {
-//      MastManualStop();   Do nothing
-    }
-    else
-    {
-      MastManualRight();
-    }
-  }
-  else
-  {
-    MastManualStop();
-  }
+//  crabManualCmd
 }
 
 
@@ -505,9 +499,9 @@ void StateSendData(void)
 {
   oTimerSendData = 0;
 
-  static UINT8 iCounterToTwoSec = 0;
+//  static UINT8 iCounterToTwoSec = 0;
   
-  SEND_CRAB_DIR_DEG;  // Via CAN bus
+//  SEND_CRAB_DIR_DEG;  // Via CAN bus
 
   // DRIVE B
   //==========================================================
@@ -525,31 +519,31 @@ void StateSendData(void)
   }
   //==========================================================
 
-  if (iCounterToTwoSec < 10)
-  {
-    iCounterToTwoSec++;
-  }
-  else
-  {
-    iCounterToTwoSec = 0;
-    LED_DEBUG3_TOGGLE;
-
-    if (SEND_DATA_TO_UART)
-    {
-      sUartLineBuffer_t buffer;
-      buffer.length = sprintf ( buffer.buffer
-                              , "\n\rCurrent pos\t\t= %f\n\rCurrent wind\t\t= %f\n\r"
-  //                            , "\n\rCurrent speed\t\t= %f\n\rCurrent pos\t\t= %f\n\rCurrent wind\t\t= %f\n\r"
-  //                            , mastSpeed.currentValue
-                              , mastAngle.currentValue
-                              , windAngle.currentValue
-                              );
-
-      Uart.PutTxFifoBuffer(UART6, &buffer);
-    }
-    
-    WriteMastPos2Eeprom();
-  }
+//  if (iCounterToTwoSec < 10)
+//  {
+//    iCounterToTwoSec++;
+//  }
+//  else
+//  {
+//    iCounterToTwoSec = 0;
+//    LED_DEBUG3_TOGGLE;
+//
+//    if (SEND_DATA_TO_UART)
+//    {
+//      sUartLineBuffer_t buffer;
+//      buffer.length = sprintf ( buffer.buffer
+//                              , "\n\rCurrent pos\t\t= %f\n\rCurrent wind\t\t= %f\n\r"
+//  //                            , "\n\rCurrent speed\t\t= %f\n\rCurrent pos\t\t= %f\n\rCurrent wind\t\t= %f\n\r"
+//  //                            , mastSpeed.currentValue
+//                              , mastAngle.currentValue
+//                              , windAngle.currentValue
+//                              );
+//
+//      Uart.PutTxFifoBuffer(UART6, &buffer);
+//    }
+//    
+//    WriteMastPos2Eeprom();
+//  }
 }
 
 
@@ -559,35 +553,47 @@ void StateSendData(void)
 //===============================================================
 void StateAcq(void)
 {
-  float tempWindAngle = 0;
+//  float tempWindAngle = 0;
+  UINT16 adcLeft
+        ,adcRight
+        ;
 
-  if (oManualMode)
-  {
-    LED_DEBUG0_ON;
-  }
-  else
-  {
-    LED_DEBUG0_OFF;
-  }
+//  if (oManualMode)
+//  {
+//    LED_DEBUG0_ON;
+//  }
+//  else
+//  {
+//    LED_DEBUG0_OFF;
+//  }
 
-  if (oNewWindAngle)
-  {
-    nWindAngleSamples++;
-    memcpy ((void *) &tempWindAngle, (void *) &rxWindAngle, 4);  // Copy contents of UINT32 into float
-    meanWindAngle += tempWindAngle;
-  }
+//  if (oNewWindAngle)
+//  {
+//    nWindAngleSamples++;
+//    memcpy ((void *) &tempWindAngle, (void *) &rxWindAngle, 4);  // Copy contents of UINT32 into float
+//    meanWindAngle += tempWindAngle;
+//  }
   
   if (oAdcReady)
   {
+    oAdcReady = 0;
     
+    adcLeft  = Adc.Var.adcReadValues[2];
+    adcRight = Adc.Var.adcReadValues[3];
+    
+    CrabBitToMm(   adcLeft , &leftActPos , LEFT_ACTUATOR );
+    CrabBitToMm(   adcRight, &rightActPos, RIGHT_ACTUATOR);
+    
+    CrabMmToDeg(leftActPos , &leftActDeg , LEFT_ACTUATOR );
+    CrabMmToDeg(rightActPos, &rightActDeg, RIGHT_ACTUATOR);
   }
 
-  AssessButtons();
+//  AssessButtons();
 
-  AssessMastValues();
+//  AssessMastValues();
 
-  UINT32 coreTickRate = Timer.Tic(1500, SCALE_US);
-  Skadi.GetCmdMsgFifo();
-  INT32 time = Timer.Toc(1500, coreTickRate);
-  UINT8 test = 0;
+//  UINT32 coreTickRate = Timer.Tic(1500, SCALE_US);
+//  Skadi.GetCmdMsgFifo();
+//  INT32 time = Timer.Toc(1500, coreTickRate);
+//  UINT8 test = 0;
 }
