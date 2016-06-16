@@ -325,6 +325,10 @@ void InitCan(void)
   Can.SetChannel(CAN1, CAN_CHANNEL2, 8, RX);
   Can.SetChannelMask(CAN1, CAN_CHANNEL2, CAN_FILTER1, 0x20, CAN_FILTER_MASK0, 0x7FF);
 
+  // Potentiometer from steering wheel
+  Can.SetChannel(CAN1, CAN_CHANNEL3, 8, RX);
+  Can.SetChannelMask(CAN1, CAN_CHANNEL3, CAN_FILTER2, 0x43, CAN_FILTER_MASK0, 0x7FF);
+
   Can.ConfigInterrupt(CAN1, CAN1_INTERRUPT_PRIORITY, CAN1_INTERRUPT_SUBPRIORITY);
 }
 

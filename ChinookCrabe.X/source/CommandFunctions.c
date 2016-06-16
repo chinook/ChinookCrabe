@@ -40,10 +40,13 @@ const sMmToDeg_t mm2degRel =
    .deg       = {   -35,    -34,    -33,    -32,    -31,    -30,    -29,    -28,   -27,    -26,    -25,    -24,    -23,    -22,    -21,    -20,    -19,    -18,    -17,  -16,     -15,    -14,    -13,    -12,    -11,    -10,     -9,     -8,     -7,     -6,     -5,     -4,     -3,     -2,     -1,      0,      1,      2,      3,      4,      5,      6,      7,      8,      9,     10,     11,     12,     13,     14,     15,    16,     17,     18,     19,     20,     21,     22,     23,     24,     25,     26,    27,     28,     29,     30,     31,     32,     33,     34,     35}
   ,.leftMm    = { -77.5, -75.06, -72.63, -70.21, -67.79, -65.38, -62.98, -60.59, -58.21, -55.84, -53.48, -51.14, -48.81, -46.49, -44.19, -41.9, -39.63, -37.38, -35.14, -32.92, -30.72, -28.53, -26.36, -24.22, -22.09, -19.98, -17.89, -15.82, -13.77, -11.74, -9.73, -7.74, -5.77, -3.83, -1.9, 0, 1.89, 3.75, 5.59, 7.41, 9.2, 10.98, 12.74, 14.47, 16.18, 17.87, 19.54, 21.19, 22.82, 24.43, 26.02, 27.81, 29.13, 30.66, 32.16, 33.65, 35.12, 36.57, 37.99, 39.4, 40.79, 42.16, 43.51, 44.85, 46.16, 47.46, 48.74, 50, 51.25, 52.47, 53.68}
   ,.rightMm   = { 53.68,  52.47,  51.25,     50, 48.74, 47.46, 46.16, 44.85, 43.51, 42.16, 40.79, 39.4, 37.99, 36.57, 35.12, 33.65, 32.16, 30.66, 29.13, 27.81, 26.02, 24.43, 22.82, 21.19, 19.54, 17.87, 16.18, 14.47, 12.74, 10.98, 9.2, 7.41, 5.59, 3.75, 1.89, 0, -1.9, -3.83, -5.77, -7.74, -9.73, -11.74, -13.77, -15.82, -17.89, -19.98, -22.09, -24.22, -26.36, -28.53, -30.72, -32.92, -35.14, -37.38, -39.63, -41.9, -44.19, -46.49, -48.81, -51.14, -53.48, -55.84, -58.21, -60.59, -62.98, -65.38, -67.79, -70.21, -72.63, -75.06, -77.5}
-  ,.leftZero  = 113.89
-  ,.rightZero = 113.89
+
 };
 //=====================================
+
+float  crabLeftZeroMm  = 367.14
+      ,crabRightZeroMm = 367.34
+      ;
 
 // Actuator V to mm table
 //=====================================
@@ -576,15 +579,47 @@ void AssessMastValues (void)
 
 void CrabMmToDeg (float mm, float *deg, CrabActuator_t act)
 {
-  UINT8 i, iMm;
+  UINT8 i, iMm, max;
   float slope;
   
-  for (i = 0; i < 71; i++)
+  if (act == LEFT_ACTUATOR)
   {
-    if (mm2degRel.leftMm[i] >= mm)
+    max = 174;
+    for (i = 0; i < max; i++)
     {
-      iMm = i;
-      i = 72;
+      if ((mm2degRel.leftMm[i] + crabLeftZeroMm) >= mm)
+      {
+        iMm = i;
+        i = max+1;
+      }
+    }
+    if (iMm < (max - 1))
+    {
+      Interpol2D(mm2degRel.leftMm[iMm] + crabLeftZeroMm, mm2degRel.deg[iMm], mm2degRel.leftMm[iMm + 1] + crabLeftZeroMm, mm2degRel.deg[iMm + 1], mm, deg);
+    }
+    else
+    {
+      *deg = mm2degRel.deg[iMm]; 
+    }
+  }
+  else
+  {
+    max = 196;
+    for (i = 0; i < max; i++)
+    {
+      if ((mm2degRel.rightMm[i] + crabRightZeroMm) >= mm)
+      {
+        iMm = i;
+        i = max+1;
+      }
+    }
+    if (iMm < (max - 1))
+    {
+      Interpol2D(mm2degRel.rightMm[iMm] + crabRightZeroMm, mm2degRel.deg[iMm], mm2degRel.rightMm[iMm + 1] + crabRightZeroMm, mm2degRel.deg[iMm + 1], mm, deg);
+    }
+    else
+    {
+      *deg = mm2degRel.deg[iMm]; 
     }
   }
   
@@ -597,15 +632,33 @@ void CrabMmToDeg (float mm, float *deg, CrabActuator_t act)
 //    deg = DEG_TO_MM.deg[0];
 //  }
   
-  *deg = mm2degRel.deg[iMm];
+//  *deg = mm2degRel.deg[iMm];
 }
 
-void CrabDegToMm (float deg, float *mm, CrabActuator_t act)
+INT8 CrabDegToMm (INT8 deg, float *mm, CrabActuator_t act)
 {
+  UINT8 iMm;
   
+  if ( (deg < -35) || (deg > 35) )
+  {
+    return -1;
+  }
+  
+  iMm = deg + 35;
+  
+  if (act == LEFT_ACTUATOR)
+  {
+    *mm = mm2degRel.leftMm[iMm] + crabLeftZeroMm;
+  }
+  else
+  {
+    *mm = mm2degRel.rightMm[iMm] + crabRightZeroMm;
+  }
+  
+  return 0;
 }
 
-void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act)
+void CrabBitToMm (UINT16 bitNum, float *mm, CrabActuator_t act)
 {
   UINT8 i, iBit;
   UINT8 max;
@@ -615,7 +668,7 @@ void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act)
     max = 174;
     for (i = 0; i < max; i++)
     {
-      if (volt2mm.leftBit[i] >= bit)
+      if (volt2mm.leftBit[i] >= bitNum)
       {
         iBit = i;
         i = max + 1;
@@ -623,7 +676,7 @@ void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act)
     }
     if (iBit < (max - 1))
     {
-      Interpol2D(volt2mm.leftBit[iBit], volt2mm.leftMm[iBit], volt2mm.leftBit[iBit + 1], volt2mm.leftMm[iBit + 1], bit, mm);
+      Interpol2D(volt2mm.leftBit[iBit], volt2mm.leftMm[iBit], volt2mm.leftBit[iBit + 1], volt2mm.leftMm[iBit + 1], bitNum, mm);
     }
     else
     {
@@ -635,7 +688,7 @@ void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act)
     max = 196;
     for (i = 0; i < max; i++)
     {
-      if (volt2mm.rightBit[i] >= bit)
+      if (volt2mm.rightBit[i] >= bitNum)
       {
         iBit = i;
         i = max + 1;
@@ -644,7 +697,7 @@ void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act)
     
     if (iBit < (max - 1))
     {
-      Interpol2D(volt2mm.rightBit[iBit], volt2mm.rightMm[iBit], volt2mm.rightBit[iBit + 1], volt2mm.rightMm[iBit + 1], bit, mm);
+      Interpol2D(volt2mm.rightBit[iBit], volt2mm.rightMm[iBit], volt2mm.rightBit[iBit + 1], volt2mm.rightMm[iBit + 1], bitNum, mm);
     }
     else
     {

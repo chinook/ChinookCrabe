@@ -46,6 +46,8 @@
 #define ACTUATOR_MIN_POS            0.116f    // 0.119f for the other
 #define ACTUATOR_MIN_VOLT           0.3f
 
+#define CRAB_ERROR                  0.5f      // Degrees
+
 
 /*
  * Structure used for the Tustin discrete integrators
@@ -66,10 +68,8 @@ typedef struct sMmToDeg
   float deg [71];
   
   float leftMm  [71];
-  float leftZero;
   
   float rightMm [71];
-  float rightZero;
   
 } sMmToDeg_t;
 
@@ -104,7 +104,7 @@ void AssessMastValues (void);
 
 void Interpol2D (float x0, float y0, float x1, float y1, float x, float *y);
 void CrabVoltToMm (float volt, float *mm, CrabActuator_t act);
-void CrabDegToMm (float deg, float *mm, CrabActuator_t act);
+INT8 CrabDegToMm (INT8 deg, float *mm, CrabActuator_t act);
 void CrabMmToDeg (float mm, float *deg, CrabActuator_t act);
 void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act);
 

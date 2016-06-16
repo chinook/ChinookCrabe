@@ -281,7 +281,8 @@ typedef struct{
 //==============================================================================
 // Variable definitions for CAN
 //==============================================================================
-#define CAN_NB_CHANNELS     3 // 3 CAN channels will be used
+//#define CAN_NB_CHANNELS     3 // 3 CAN channels will be used
+#define CAN_NB_CHANNELS     4 // 4 CAN channels will be used
 #define CAN_BUFFER_SIZE     8
 
 BYTE Can1MessageFifoArea [ CAN_NB_CHANNELS     // Space used by CAN

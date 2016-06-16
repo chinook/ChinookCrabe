@@ -202,6 +202,17 @@ typedef union
 #define     DRVB        2
 #define     DRVAB       3
 
+#define     DRV_LEFT          DRVA
+#define     DRV_RIGHT         DRVB
+#define     DRV_LEFT_SLEEP    DRVA_SLEEP
+#define     DRV_LEFT_RESET    DRVA_RESET
+#define     DRV_RIGHT_SLEEP   DRVB_SLEEP
+#define     DRV_RIGHT_RESET   DRVB_RESET
+#define     DRV_LEFT_PWM1     PWM_4
+#define     DRV_LEFT_PWM2     PWM_5
+#define     DRV_RIGHT_PWM1    PWM_2
+#define     DRV_RIGHT_PWM2    PWM_3
+
 //==============================================================================
 // Variable declarations
 //==============================================================================

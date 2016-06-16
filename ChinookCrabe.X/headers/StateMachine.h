@@ -65,6 +65,9 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 #define MAST_MAX               90.0f
 #define MAST_MIN              -90.0f
 
+#define ACTUATOR_MIN_DEG      -15.0f
+#define ACTUATOR_MAX_DEG       15.0f
+
 /*********** BASIC CONDITION *****************/
 #define MAST_LEFT             (oManualMastLeft)
 #define MAST_RIGHT            (oManualMastRight)
@@ -74,7 +77,7 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 #define MAST_DIR_DOWN         SW1
 #define MAST_DIR_UP           !MAST_DIR_DOWN
 #define MANUAL_MODE           oManualMode
-#define MANUAL_FLAG_CHANGE    oManualFlagChng
+#define NEW_MEASUREMENT       oNewAdcMeasurement
 #define DISCONNECT_OK         0                                   // Need to be coded
 #define REG_TIMER_OK          oTimerReg
 #define SEND_DATA_TIMER_OK    oTimerSendData
@@ -94,7 +97,7 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 
 /******* TRANSITION CONDITION ACQ **********/
-#define ACQ_2_MANUAL           0//MANUAL_MODE && MANUAL_FLAG_CHANGE
+#define ACQ_2_MANUAL           MANUAL_MODE && NEW_MEASUREMENT
 #define ACQ_2_DISCONNECT       DISCONNECT_OK
 #define ACQ_2_REG              0//!MANUAL_MODE && REG_TIMER_OK
 #define ACQ_2_GET_MAST_DATA    0//MANUAL_MODE && REG_TIMER_OK
@@ -110,7 +113,7 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 
 /******* TRANSITION CONDITION MANUAL **********/
-#define MANUAL_2_ACQ           0//1
+#define MANUAL_2_ACQ           1
 
 
 /******* TRANSITION CONDITION REG **********/
