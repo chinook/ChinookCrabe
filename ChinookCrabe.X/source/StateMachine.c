@@ -586,9 +586,16 @@ void StateSendData(void)
 void StateAcq(void)
 {
 //  float tempWindAngle = 0;
-  UINT16 adcLeft
-        ,adcRight
+  UINT32 adcLeft  = 0
+        ,adcRight = 0
         ;
+  
+  UINT16 i = 0;
+  
+  static UINT16  adcMemLeft[150]  = {0}
+                ,adcMemRight[150] = {0}
+                ,iAdcSample       =  0
+                ;
   
   if (oNewManualCmd)
   {
@@ -627,16 +634,33 @@ void StateAcq(void)
   if (oAdcReady)
   {
     oAdcReady = 0;
-    oNewAdcMeasurement = 1;
     
-    adcLeft  = Adc.Var.adcReadValues[3];
-    adcRight = Adc.Var.adcReadValues[2];
+    adcMemLeft [iAdcSample] = Adc.Var.adcReadValues[3];
+    adcMemRight[iAdcSample] = Adc.Var.adcReadValues[2];
     
-    CrabBitToMm(   adcLeft , &leftActPos , LEFT_ACTUATOR );
-    CrabBitToMm(   adcRight, &rightActPos, RIGHT_ACTUATOR);
+    iAdcSample++;
     
-    CrabMmToDeg(leftActPos , &leftActDeg , LEFT_ACTUATOR );
-    CrabMmToDeg(rightActPos, &rightActDeg, RIGHT_ACTUATOR);
+    if (iAdcSample >= N_ADC_SAMPLES)
+    {
+      for (i = 0; i < iAdcSample; i++)
+      {
+        adcLeft   += adcMemLeft [i];
+        adcRight  += adcMemRight[i];
+      }
+      
+      adcLeft   = (float) adcLeft   / (float) iAdcSample + 0.5;
+      adcRight  = (float) adcRight  / (float) iAdcSample + 0.5;
+//      adcLeft  = Adc.Var.adcReadValues[3];
+//      adcRight = Adc.Var.adcReadValues[2];
+
+      CrabBitToMm(   adcLeft , &leftActPos , LEFT_ACTUATOR );
+      CrabBitToMm(   adcRight, &rightActPos, RIGHT_ACTUATOR);
+
+      CrabMmToDeg(leftActPos , &leftActDeg , LEFT_ACTUATOR );
+      CrabMmToDeg(rightActPos, &rightActDeg, RIGHT_ACTUATOR);
+      
+      oNewAdcMeasurement = 1;
+    }
   }
 
 //  AssessButtons();

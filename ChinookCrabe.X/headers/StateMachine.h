@@ -84,6 +84,8 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 #define PULSE_PER_DEGREE      30
 
+#define N_ADC_SAMPLES         100
+
 //==============================================================================
 // STATE TRANSITIONS
 //==============================================================================
