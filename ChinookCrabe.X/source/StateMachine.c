@@ -50,6 +50,10 @@ volatile BOOL oNewManualCmd = 1;
 
 BOOL oManualLeftMoving      = 0
     ,oManualRightMoving     = 0
+    ,oManualLeftLowerLim    = 0
+    ,oManualRightLowerLim   = 0
+    ,oManualLeftUpperLim    = 0
+    ,oManualRightUpperLim   = 0
     ,oManualLeftStopped     = 1
     ,oManualRightStopped    = 1
     ;
@@ -292,14 +296,14 @@ void StateInit(void)
   
   // Code to adjust the actuators
   
-//  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 550);    // Left expand
-//  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 450);
-////  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 450);    // Left shrink
-////  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 550);
-//  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 550);    // Right expand
-//  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 450);
-////  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 450);    // Right shrink
-////  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 550);
+////  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 550);    // Left expand
+////  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 450);
+//  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 450);    // Left shrink
+//  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 550);
+////  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 550);    // Right expand
+////  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 450);
+//  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 450);    // Right shrink
+//  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 550);
 //  
 //  DRV_LEFT_SLEEP = 1;
 //  DRV_RIGHT_SLEEP = 1;
@@ -316,39 +320,72 @@ void StateManual(void)
 {
   oNewAdcMeasurement = 0;
   
-  if (  ( leftActDeg < ACTUATOR_MIN_DEG) || ( leftActDeg > ACTUATOR_MAX_DEG) 
-     || (rightActDeg < ACTUATOR_MIN_DEG) || (rightActDeg > ACTUATOR_MAX_DEG) 
-     )
+  if (leftActDeg < ACTUATOR_MIN_DEG)
   {
-    if ( (leftActDeg < ACTUATOR_MIN_DEG) || (leftActDeg > ACTUATOR_MAX_DEG) )
-    {
-      if (oManualLeftMoving)
-      {
-        DRV_LEFT_SLEEP = 0;
-        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 500);
-        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 500);
-
-        oManualLeftMoving = 0;
-        oManualLeftStopped = 1;
-      }
-    }
-    
-    if ( (rightActDeg < ACTUATOR_MIN_DEG) || (rightActDeg > ACTUATOR_MAX_DEG) )
-    {
-      if (oManualRightMoving)
-      {
-        DRV_RIGHT_SLEEP = 0;
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 500);
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 500);
-
-        oManualRightMoving = 0;
-        oManualRightStopped = 1;
-      }
-    }
+    oManualLeftLowerLim = 1;
   }
   else
   {
-//    if ( ABS(leftActDeg - crabManualCmdDeg) <= CRAB_ERROR )
+    oManualLeftLowerLim = 0;
+  }
+  if (leftActDeg > ACTUATOR_MAX_DEG)
+  {
+    oManualLeftUpperLim = 1;
+  }
+  else
+  {
+    oManualLeftUpperLim = 0;
+  }
+  
+  if (rightActDeg < ACTUATOR_MIN_DEG)
+  {
+    oManualRightLowerLim = 1;
+  }
+  else
+  {
+    oManualRightLowerLim = 0;
+  }
+  if (rightActDeg > ACTUATOR_MAX_DEG)
+  {
+    oManualRightUpperLim = 1;
+  }
+  else
+  {
+    oManualRightUpperLim = 0;
+  }
+  
+//  if (  ( leftActDeg < ACTUATOR_MIN_DEG) || ( leftActDeg > ACTUATOR_MAX_DEG) 
+//     || (rightActDeg < ACTUATOR_MIN_DEG) || (rightActDeg > ACTUATOR_MAX_DEG) 
+//     )
+//  {
+//    if ( (leftActDeg < ACTUATOR_MIN_DEG) || (leftActDeg > ACTUATOR_MAX_DEG) )
+//    {
+//      if (oManualLeftMoving)
+//      {
+//        DRV_LEFT_SLEEP = 0;
+//        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 500);
+//        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 500);
+//
+//        oManualLeftMoving = 0;
+//        oManualLeftStopped = 1;
+//      }
+//    }
+//    
+//    if ( (rightActDeg < ACTUATOR_MIN_DEG) || (rightActDeg > ACTUATOR_MAX_DEG) )
+//    {
+//      if (oManualRightMoving)
+//      {
+//        DRV_RIGHT_SLEEP = 0;
+//        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 500);
+//        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 500);
+//
+//        oManualRightMoving = 0;
+//        oManualRightStopped = 1;
+//      }
+//    }
+//  }
+//  else
+//  {
     if ( (leftActDeg <= (crabManualCmdDeg + CRAB_ERROR)) && (leftActDeg >= (crabManualCmdDeg - CRAB_ERROR)) )
     {
       if (oManualLeftMoving)
@@ -363,30 +400,59 @@ void StateManual(void)
     }
     else if (leftActPos > crabManualCmdMmLeft)
     {
-      if (oManualLeftStopped)
+      if (oManualLeftLowerLim)
       {
-        DRV_LEFT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 400);   // Shrink
-        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 600);
+        if (oManualLeftMoving)
+        {
+          DRV_LEFT_SLEEP = 0;
+          Pwm.SetDutyCycle(DRV_LEFT_PWM1, 500);
+          Pwm.SetDutyCycle(DRV_LEFT_PWM2, 500);
 
-        oManualLeftStopped = 0;
-        oManualLeftMoving  = 1;
+          oManualLeftMoving = 0;
+          oManualLeftStopped = 1;
+        }
+      }
+      else
+      {
+        if (oManualLeftStopped)
+        {
+          DRV_LEFT_SLEEP = 1;
+          Pwm.SetDutyCycle(DRV_LEFT_PWM1, 400);   // Shrink
+          Pwm.SetDutyCycle(DRV_LEFT_PWM2, 600);
+
+          oManualLeftStopped = 0;
+          oManualLeftMoving  = 1;
+        }
       }
     }
     else if (leftActPos < crabManualCmdMmLeft)
     {
-      if (oManualLeftStopped)
+      if (oManualLeftUpperLim)
       {
-        DRV_LEFT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 600);   // Expand
-        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 400);
+        if (oManualLeftMoving)
+        {
+          DRV_LEFT_SLEEP = 0;
+          Pwm.SetDutyCycle(DRV_LEFT_PWM1, 500);
+          Pwm.SetDutyCycle(DRV_LEFT_PWM2, 500);
 
-        oManualLeftStopped = 0;
-        oManualLeftMoving  = 1;
+          oManualLeftMoving = 0;
+          oManualLeftStopped = 1;
+        }
+      }
+      else
+      {
+        if (oManualLeftStopped)
+        {
+          DRV_LEFT_SLEEP = 1;
+          Pwm.SetDutyCycle(DRV_LEFT_PWM1, 600);   // Expand
+          Pwm.SetDutyCycle(DRV_LEFT_PWM2, 400);
+
+          oManualLeftStopped = 0;
+          oManualLeftMoving  = 1;
+        }
       }
     }
 
-//    if ( ABS(rightActDeg - crabManualCmdDeg) <= CRAB_ERROR )
     if ( (rightActDeg <= (crabManualCmdDeg + CRAB_ERROR)) && (rightActDeg >= (crabManualCmdDeg - CRAB_ERROR)) )
     {
       if (oManualRightMoving)
@@ -401,29 +467,59 @@ void StateManual(void)
     }
     else if (rightActPos > crabManualCmdMmRight)
     {
-      if (oManualRightStopped)
+      if (oManualRightUpperLim)
       {
-        DRV_RIGHT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 400);   // Shrink
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 600);
+        if (oManualRightMoving)
+        {
+          DRV_RIGHT_SLEEP = 0;
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 500);
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 500);
 
-        oManualRightStopped = 0;
-        oManualRightMoving  = 1;
+          oManualRightMoving = 0;
+          oManualRightStopped = 1;
+        }
+      }
+      else
+      {
+        if (oManualRightStopped)
+        {
+          DRV_RIGHT_SLEEP = 1;
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 400);   // Shrink
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 600);
+
+          oManualRightStopped = 0;
+          oManualRightMoving  = 1;
+        }
       }
     }
     else if (rightActPos < crabManualCmdMmRight)
     {
-      if (oManualRightStopped)
+      if (oManualRightUpperLim)
       {
-        DRV_RIGHT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 600);   // Expand
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 400);
+        if (oManualRightMoving)
+        {
+          DRV_RIGHT_SLEEP = 0;
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 500);
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 500);
 
-        oManualRightStopped = 0;
-        oManualRightMoving  = 1;
+          oManualRightMoving = 0;
+          oManualRightStopped = 1;
+        }
+      }
+      else
+      {
+        if (oManualRightStopped)
+        {
+          DRV_RIGHT_SLEEP = 1;
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 600);   // Expand
+          Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 400);
+
+          oManualRightStopped = 0;
+          oManualRightMoving  = 1;
+        }
       }
     }
-  }
+//  }
 }
 
 
@@ -586,7 +682,10 @@ void StateSendData(void)
 void StateAcq(void)
 {
 //  float tempWindAngle = 0;
-  UINT32 adcLeft  = 0
+//  UINT32 adcLeft  = 0
+//        ,adcRight = 0
+//        ;
+  UINT16 adcLeft  = 0
         ,adcRight = 0
         ;
   
@@ -635,23 +734,23 @@ void StateAcq(void)
   {
     oAdcReady = 0;
     
-    adcMemLeft [iAdcSample] = Adc.Var.adcReadValues[3];
-    adcMemRight[iAdcSample] = Adc.Var.adcReadValues[2];
-    
-    iAdcSample++;
-    
-    if (iAdcSample >= N_ADC_SAMPLES)
-    {
-      for (i = 0; i < iAdcSample; i++)
-      {
-        adcLeft   += adcMemLeft [i];
-        adcRight  += adcMemRight[i];
-      }
-      
-      adcLeft   = (float) adcLeft   / (float) iAdcSample + 0.5;
-      adcRight  = (float) adcRight  / (float) iAdcSample + 0.5;
-//      adcLeft  = Adc.Var.adcReadValues[3];
-//      adcRight = Adc.Var.adcReadValues[2];
+//    adcMemLeft [iAdcSample] = Adc.Var.adcReadValues[3];
+//    adcMemRight[iAdcSample] = Adc.Var.adcReadValues[2];
+//    
+//    iAdcSample++;
+//    
+//    if (iAdcSample >= N_ADC_SAMPLES)
+//    {
+//      for (i = 0; i < iAdcSample; i++)
+//      {
+//        adcLeft   += adcMemLeft [i];
+//        adcRight  += adcMemRight[i];
+//      }
+//      
+//      adcLeft   = (float) adcLeft   / (float) iAdcSample + 0.5;
+//      adcRight  = (float) adcRight  / (float) iAdcSample + 0.5;
+      adcLeft  = Adc.Var.adcReadValues[3];
+      adcRight = Adc.Var.adcReadValues[2];
 
       CrabBitToMm(   adcLeft , &leftActPos , LEFT_ACTUATOR );
       CrabBitToMm(   adcRight, &rightActPos, RIGHT_ACTUATOR);
@@ -659,10 +758,10 @@ void StateAcq(void)
       CrabMmToDeg(leftActPos , &leftActDeg , LEFT_ACTUATOR );
       CrabMmToDeg(rightActPos, &rightActDeg, RIGHT_ACTUATOR);
       
-      iAdcSample = 0;
+//      iAdcSample = 0;
       
       oNewAdcMeasurement = 1;
-    }
+//    }
   }
 
 //  AssessButtons();
