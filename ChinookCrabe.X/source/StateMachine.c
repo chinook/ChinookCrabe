@@ -659,6 +659,8 @@ void StateAcq(void)
       CrabMmToDeg(leftActPos , &leftActDeg , LEFT_ACTUATOR );
       CrabMmToDeg(rightActPos, &rightActDeg, RIGHT_ACTUATOR);
       
+      iAdcSample = 0;
+      
       oNewAdcMeasurement = 1;
     }
   }
