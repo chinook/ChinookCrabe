@@ -168,6 +168,14 @@ void SetParam();
  *************************************************************/
 void GetParam();
 
+/**************************************************************
+ * Function name  : SetCrabManualCmd
+ * Purpose        : Set the manual cmd for the crab [angle]
+ * Arguments      : Received from Skadi functions
+ * Returns        : None.
+ *************************************************************/
+void SetCrabManualCmd();
+
 
 #endif	/* __SKADI_FUNCTIONS__ */
 

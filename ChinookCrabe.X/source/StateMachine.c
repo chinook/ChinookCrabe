@@ -28,8 +28,9 @@ extern volatile sButtonStates_t buttons;
 
 extern volatile UINT32 rxWindAngle;
 
-float  crabManualCmdDeg     = 0
-      ,crabManualCmdMmLeft  = 0
+volatile float crabManualCmdDeg = 0;
+
+float  crabManualCmdMmLeft  = 0
       ,crabManualCmdMmRight = 0
       ;
 
@@ -45,7 +46,7 @@ float  leftActPos
 
 BOOL oNewAdcMeasurement = 0;
 
-volatile BOOL oNewManualCmd = 0;
+volatile BOOL oNewManualCmd = 1;
 
 BOOL oManualLeftMoving      = 0
     ,oManualRightMoving     = 0
@@ -158,21 +159,6 @@ void StateScheduler(void)
   }
 
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  // Current state = StateGetMastData
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  else if (pStateMast == &StateGetMastData)
-  {
-    if (GET_MAST_DATA_2_ACQ)
-    {
-      pStateMast = &StateAcq;
-    }
-    else
-    {
-      pStateMast = &StateGetMastData;    // Stay in current state
-    }
-  }
-
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // Current state = StateSendData
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   else if (pStateMast == &StateSendData)
@@ -232,21 +218,6 @@ void StateScheduler(void)
     }
   }
 
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  // Current state = StateIdle
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  else if (pStateMast == &StateIdle)
-  {
-    if (IDLE_2_INIT)
-    {
-      pStateMast = &StateInit;
-    }
-    else
-    {
-      pStateMast = &StateIdle;    // Stay in current state
-    }
-  }
-
 //  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //   Current state = undetermined
 //  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -254,9 +225,6 @@ void StateScheduler(void)
   {
     pStateMast = &StateInit;   // Go to Error state by default
   }
-  /*
-   * DEVELOPPER CODE HERE
-   */
 }
 
 
@@ -273,11 +241,11 @@ void StateInit(void)
   INIT_TIMER;
   INIT_ADC;
   INIT_UART;
-//  INIT_SKADI;
   INIT_SPI;
   INIT_PWM;
 //  INIT_I2C;
   INIT_CAN;
+  INIT_SKADI;
   START_INTERRUPTS;
 
   // Send ID to backplane by CAN protocol
@@ -321,6 +289,22 @@ void StateInit(void)
 
   WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors at the drive
   WriteDrive(DRVA, STATUS_Mastw);   // Reset any errors at the drive
+  
+  // Code to adjust the actuators
+  
+//  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 550);    // Left expand
+//  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 450);
+////  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 450);    // Left shrink
+////  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 550);
+//  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 550);    // Right expand
+//  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 450);
+////  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 450);    // Right shrink
+////  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 550);
+//  
+//  DRV_LEFT_SLEEP = 1;
+//  DRV_RIGHT_SLEEP = 1;
+//  
+//  while(1);
 }
 
 
@@ -332,8 +316,8 @@ void StateManual(void)
 {
   oNewAdcMeasurement = 0;
   
-  if (  (leftActDeg < ACTUATOR_MIN_DEG) || (leftActDeg > ACTUATOR_MAX_DEG) 
-     || (leftActDeg < ACTUATOR_MIN_DEG) || (leftActDeg > ACTUATOR_MAX_DEG) 
+  if (  ( leftActDeg < ACTUATOR_MIN_DEG) || ( leftActDeg > ACTUATOR_MAX_DEG) 
+     || (rightActDeg < ACTUATOR_MIN_DEG) || (rightActDeg > ACTUATOR_MAX_DEG) 
      )
   {
     if ( (leftActDeg < ACTUATOR_MIN_DEG) || (leftActDeg > ACTUATOR_MAX_DEG) )
@@ -349,7 +333,7 @@ void StateManual(void)
       }
     }
     
-    if ( (leftActDeg < ACTUATOR_MIN_DEG) || (leftActDeg > ACTUATOR_MAX_DEG) )
+    if ( (rightActDeg < ACTUATOR_MIN_DEG) || (rightActDeg > ACTUATOR_MAX_DEG) )
     {
       if (oManualRightMoving)
       {
@@ -364,7 +348,8 @@ void StateManual(void)
   }
   else
   {
-    if ( ABS(leftActPos - crabManualCmdMmLeft) <= CRAB_ERROR )
+//    if ( ABS(leftActDeg - crabManualCmdDeg) <= CRAB_ERROR )
+    if ( (leftActDeg <= (crabManualCmdDeg + CRAB_ERROR)) && (leftActDeg >= (crabManualCmdDeg - CRAB_ERROR)) )
     {
       if (oManualLeftMoving)
       {
@@ -381,8 +366,8 @@ void StateManual(void)
       if (oManualLeftStopped)
       {
         DRV_LEFT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 300);   // Shrink
-        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 700);
+        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 400);   // Shrink
+        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 600);
 
         oManualLeftStopped = 0;
         oManualLeftMoving  = 1;
@@ -393,15 +378,16 @@ void StateManual(void)
       if (oManualLeftStopped)
       {
         DRV_LEFT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 700);   // Expand
-        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 300);
+        Pwm.SetDutyCycle(DRV_LEFT_PWM1, 600);   // Expand
+        Pwm.SetDutyCycle(DRV_LEFT_PWM2, 400);
 
         oManualLeftStopped = 0;
         oManualLeftMoving  = 1;
       }
     }
 
-    if ( ABS(rightActPos - crabManualCmdMmRight) <= CRAB_ERROR )
+//    if ( ABS(rightActDeg - crabManualCmdDeg) <= CRAB_ERROR )
+    if ( (rightActDeg <= (crabManualCmdDeg + CRAB_ERROR)) && (rightActDeg >= (crabManualCmdDeg - CRAB_ERROR)) )
     {
       if (oManualRightMoving)
       {
@@ -418,8 +404,8 @@ void StateManual(void)
       if (oManualRightStopped)
       {
         DRV_RIGHT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 300);   // Expand
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 700);
+        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 400);   // Shrink
+        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 600);
 
         oManualRightStopped = 0;
         oManualRightMoving  = 1;
@@ -430,90 +416,12 @@ void StateManual(void)
       if (oManualRightStopped)
       {
         DRV_RIGHT_SLEEP = 1;
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 700);   // Shrink
-        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 300);
+        Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 600);   // Expand
+        Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 400);
 
         oManualRightStopped = 0;
         oManualRightMoving  = 1;
       }
-    }
-  }
-}
-
-
-//===============================================================
-// Name     : StateGetMastData
-// Purpose  : Get position of mast if in manual mode
-//===============================================================
-void StateGetMastData(void)
-{
-  oTimerReg = 0;
-  
-  // Update wind direction
-  windAngle.previousValue = windAngle.currentValue;
-
-  float tempWind;
-//  memcpy ((void *) &tempWind, (void *) &rxWindAngle, 4);
-
-  if (nWindAngleSamples != 0)
-  {
-    tempWind = meanWindAngle / nWindAngleSamples;
-    meanWindAngle = 0;
-    nWindAngleSamples = 0;
-  }
-  else  // If no new sample was received
-  {
-    tempWind = windAngle.previousValue;   // Keep previous value as current value
-  }
-
-  /*
-   * If the wind is not in the acceptable range, change the command to the MAX
-   * or MIN. Mast must not go beyond these values.
-   */
-  if (tempWind > MAST_MAX)
-  {
-    windAngle.currentValue = MAST_MAX;
-  }
-  else if (tempWind < MAST_MIN)
-  {
-    windAngle.currentValue = MAST_MIN;
-  }
-  else if (tempWind != windAngle.currentValue)
-  {
-    windAngle.currentValue = tempWind;
-  }
-
-  // Update mast speed
-  mastSpeed.previousValue = mastSpeed.currentValue;
-  mastSpeed.currentValue  = mastCurrentSpeed;
-
-  // Get mast position from mast speed
-  TustinZ((void *) &mastSpeed, (void *) &mastAngle);    // Discrete integrator
-
-  /*
-   * Some kind of modulo
-   */
-  if (mastAngle.currentValue > 180)
-  {
-    mastAngle.currentValue -= 360;
-  }
-  else if (mastAngle.currentValue < -180)
-  {
-    mastAngle.currentValue += 360;
-  }
-
-  /*
-   * Check mast limits
-   */
-  if (mastSpeed.currentValue != 0)
-  {
-    if ( (SIGN(mastSpeed.currentValue) == MAST_DIR_LEFT) && (!MAST_MIN_OK) )        // Mast too far
-    {
-      MastManualStop();
-    }
-    else if ( (SIGN(mastSpeed.currentValue) == MAST_DIR_RIGHT) && (!MAST_MAX_OK) )  // Mast too far
-    {
-      MastManualStop();
     }
   }
 }
@@ -615,7 +523,7 @@ void StateSendData(void)
 {
   oTimerSendData = 0;
 
-//  static UINT8 iCounterToTwoSec = 0;
+  static UINT8 iCounterToTwoSec = 0;
   
 //  SEND_CRAB_DIR_DEG;  // Via CAN bus
 
@@ -635,31 +543,39 @@ void StateSendData(void)
   }
   //==========================================================
 
-//  if (iCounterToTwoSec < 10)
-//  {
-//    iCounterToTwoSec++;
-//  }
-//  else
-//  {
-//    iCounterToTwoSec = 0;
-//    LED_DEBUG3_TOGGLE;
-//
-//    if (SEND_DATA_TO_UART)
-//    {
-//      sUartLineBuffer_t buffer;
-//      buffer.length = sprintf ( buffer.buffer
-//                              , "\n\rCurrent pos\t\t= %f\n\rCurrent wind\t\t= %f\n\r"
-//  //                            , "\n\rCurrent speed\t\t= %f\n\rCurrent pos\t\t= %f\n\rCurrent wind\t\t= %f\n\r"
-//  //                            , mastSpeed.currentValue
-//                              , mastAngle.currentValue
-//                              , windAngle.currentValue
-//                              );
-//
-//      Uart.PutTxFifoBuffer(UART6, &buffer);
-//    }
-//    
+  if (iCounterToTwoSec < 10)
+  {
+    iCounterToTwoSec++;
+  }
+  else
+  {
+    iCounterToTwoSec = 0;
+    LED_DEBUG3_TOGGLE;
+
+    if (SEND_DATA_TO_UART)
+    {
+      sUartLineBuffer_t buffer;
+      buffer.length = sprintf ( buffer.buffer
+//                              , "\n\rLeft angle\t= %f\n\rLeft Position\t= %f\n\rRight angle\t= %f\n\rRight Position\t= %f\n\rCommand\t\t= %f\n\r"
+                              , "\n\rLeft angle\t= %f\n\rRight angle\t= %f\n\rCommand\t\t= %f\n\r"
+//                              , "\n\rLeft angle\t= %f\n\rRight angle\t= %f\n\rCommand left\t= %f\n\rCommand right\t= %f\n\r"
+//                              , "\n\rLeft pos\t= %f\n\rRight pos\t= %f\n\rCommand left\t= %f\n\rCommand right\t= %f\n\r"
+                              , leftActDeg
+//                              , leftActPos
+                              , rightActDeg
+//                              , rightActPos
+                              , crabManualCmdDeg
+//                              , crabManualCmdMmLeft
+//                              , crabManualCmdMmRight
+//                              , crabManualCmdMmLeft
+//                              , crabManualCmdMmRight
+                              );
+
+      Uart.PutTxFifoBuffer(UART6, &buffer);
+    }
+    
 //    WriteMastPos2Eeprom();
-//  }
+  }
 }
 
 
@@ -677,6 +593,17 @@ void StateAcq(void)
   if (oNewManualCmd)
   {
     oNewManualCmd = 0;
+    
+    if (crabManualCmdDeg < -15)
+    {
+      crabManualCmdDeg = -15;
+    }
+    
+    if (crabManualCmdDeg > 15)
+    {
+      crabManualCmdDeg = 15;
+    }
+    
     CrabDegToMm(crabManualCmdDeg, &crabManualCmdMmLeft , LEFT_ACTUATOR );
     CrabDegToMm(crabManualCmdDeg, &crabManualCmdMmRight, RIGHT_ACTUATOR);
   }
@@ -702,8 +629,8 @@ void StateAcq(void)
     oAdcReady = 0;
     oNewAdcMeasurement = 1;
     
-    adcLeft  = Adc.Var.adcReadValues[2];
-    adcRight = Adc.Var.adcReadValues[3];
+    adcLeft  = Adc.Var.adcReadValues[3];
+    adcRight = Adc.Var.adcReadValues[2];
     
     CrabBitToMm(   adcLeft , &leftActPos , LEFT_ACTUATOR );
     CrabBitToMm(   adcRight, &rightActPos, RIGHT_ACTUATOR);
@@ -717,7 +644,7 @@ void StateAcq(void)
 //  AssessMastValues();
 
 //  UINT32 coreTickRate = Timer.Tic(1500, SCALE_US);
-//  Skadi.GetCmdMsgFifo();
+  Skadi.GetCmdMsgFifo();
 //  INT32 time = Timer.Toc(1500, coreTickRate);
 //  UINT8 test = 0;
 }

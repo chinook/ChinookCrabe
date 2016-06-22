@@ -44,6 +44,7 @@ extern volatile float  mastCurrentSpeed
                       ,PWM_MAX_DUTY_CYCLE
                       ,PWM_MIN_DUTY_CYCLE
                       ,ERROR_THRESHOLD
+                      ,crabManualCmdDeg
                       ;
 
 extern volatile UINT32 rxWindAngle;
@@ -51,6 +52,7 @@ extern volatile UINT32 rxWindAngle;
 extern volatile BOOL   oManualMode
                       ,oPrintData
                       ,oNewWindAngle
+                      ,oNewManualCmd
                       ;
 
 //==============================================================================
@@ -363,6 +365,33 @@ void SetParam(sSkadi_t *skadi, sSkadiArgs_t args)
   }
 
   Uart.PutTxFifoBuffer(UART6, &buffer);
+}
+
+
+/**************************************************************
+ * Function name  : SetCrabManualCmd
+ * Purpose        : Set the manual cmd for the crab [angle]
+ * Arguments      : Received from Skadi functions
+ * Returns        : None.
+ *************************************************************/
+void SetCrabManualCmd(sSkadi_t *skadi, sSkadiArgs_t args)
+{
+  sUartLineBuffer_t buffer;
+
+  float wind = atof(args.elements[0]);   // Convert argument to float
+
+  if ((wind >= -15) && (wind <= 15))
+  {
+    memcpy((void *) &crabManualCmdDeg, (void *) &wind, 4);
+    oNewManualCmd = 1;
+    buffer.length = sprintf(buffer.buffer, "Crab manual cmd = %f\r\n\n", wind);
+    Uart.PutTxFifoBuffer(UART6, &buffer);
+  }
+  else
+  {
+    buffer.length = sprintf(buffer.buffer, "Mauvais argument!\r\n\n");
+    Uart.PutTxFifoBuffer(UART6, &buffer);
+  }
 }
 
 

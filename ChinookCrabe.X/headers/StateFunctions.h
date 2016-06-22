@@ -59,7 +59,7 @@ void AssessButtons (void);
 //==============================================================================
 
 // Define this at one if you want to send the mast values via UART each (TIMER_4). Else, 0
-#define SEND_DATA_TO_UART     0
+#define SEND_DATA_TO_UART     1
 
 // Typedef for mapping the steering wheel switches and the buttons on the board
 // All the buttons used : 3 on the steering wheel, 3 on the board

@@ -46,7 +46,7 @@
 #define ACTUATOR_MIN_POS            0.116f    // 0.119f for the other
 #define ACTUATOR_MIN_VOLT           0.3f
 
-#define CRAB_ERROR                  0.5f      // Degrees
+#define CRAB_ERROR                  0.85f      // Degrees
 
 
 /*
@@ -81,6 +81,8 @@ typedef struct sVoltToMm
   UINT16 rightBit[196];
   float leftMm[174];
   float rightMm[196];
+  float leftOffset;
+  float rightOffset;
 } sVoltToMm_t;
 
 typedef enum

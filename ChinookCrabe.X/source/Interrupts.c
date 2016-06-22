@@ -52,9 +52,12 @@ volatile UINT32 rxWindAngle = 0;  // Received from CAN
 
 extern volatile BOOL  oManualMode
                      ,oCountTimeToChngMode
+                     ,oNewManualCmd
                      ;
 
 extern volatile float mastCurrentSpeed;
+
+extern volatile float crabManualCmdDeg;
 
 extern volatile sButtonStates_t buttons;
 
@@ -786,6 +789,24 @@ void __ISR(_CAN_1_VECTOR, CAN1_INT_PRIORITY) Can1InterruptHandler(void)
 
       CANUpdateChannel(CAN1, CAN_CHANNEL2);
       CANEnableChannelEvent(CAN1, CAN_CHANNEL2, CAN_RX_CHANNEL_NOT_EMPTY, TRUE);
+    }
+
+    /*
+     * CHANNEL 3 = STEERING WHEEL CRAB COMMAND
+     */
+    if (CANGetPendingEventCode(CAN1) == CAN_CHANNEL3_EVENT)
+    {
+
+      CANEnableChannelEvent(CAN1, CAN_CHANNEL3, CAN_RX_CHANNEL_NOT_EMPTY, FALSE);
+
+      message = CANGetRxMessage(CAN1, CAN_CHANNEL3);
+
+      memcpy((void *) &crabManualCmdDeg, &message->data[0], 4);
+      
+      oNewManualCmd = 1;
+
+      CANUpdateChannel(CAN1, CAN_CHANNEL3);
+      CANEnableChannelEvent(CAN1, CAN_CHANNEL3, CAN_RX_CHANNEL_NOT_EMPTY, TRUE);
     }
   }
 
