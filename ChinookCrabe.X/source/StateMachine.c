@@ -296,14 +296,14 @@ void StateInit(void)
   
   // Code to adjust the actuators
   
-////  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 550);    // Left expand
-////  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 450);
-//  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 450);    // Left shrink
-//  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 550);
-////  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 550);    // Right expand
-////  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 450);
-//  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 450);    // Right shrink
-//  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 550);
+//  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 550);    // Left expand
+//  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 450);
+////  Pwm.SetDutyCycle(DRV_LEFT_PWM1, 450);    // Left shrink
+////  Pwm.SetDutyCycle(DRV_LEFT_PWM2, 550);
+//  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 550);    // Right expand
+//  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 450);
+////  Pwm.SetDutyCycle(DRV_RIGHT_PWM1, 450);    // Right shrink
+////  Pwm.SetDutyCycle(DRV_RIGHT_PWM2, 550);
 //  
 //  DRV_LEFT_SLEEP = 1;
 //  DRV_RIGHT_SLEEP = 1;
@@ -494,7 +494,7 @@ void StateManual(void)
     }
     else if (rightActPos < crabManualCmdMmRight)
     {
-      if (oManualRightUpperLim)
+      if (oManualRightLowerLim)
       {
         if (oManualRightMoving)
         {
