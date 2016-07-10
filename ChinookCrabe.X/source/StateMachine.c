@@ -269,8 +269,8 @@ void StateManual(void)
   
   // Check for limits
   // =====================================
-//  if (leftActDeg <= ACTUATOR_MIN_DEG)
-  if (leftActPosMm <= leftActMinPosMm)
+  if (leftActDeg <= ACTUATOR_MIN_DEG)
+//  if (leftActPosMm <= leftActMinPosMm)
   {
     oManualLeftLowerLim = 1;
   }
@@ -278,8 +278,8 @@ void StateManual(void)
   {
     oManualLeftLowerLim = 0;
   }
-//  if (leftActDeg >= ACTUATOR_MAX_DEG)
-  if (leftActPosMm >= leftActMaxPosMm)
+  if (leftActDeg >= ACTUATOR_MAX_DEG)
+//  if (leftActPosMm >= leftActMaxPosMm)
   {
     oManualLeftUpperLim = 1;
   }
@@ -288,8 +288,8 @@ void StateManual(void)
     oManualLeftUpperLim = 0;
   }
   
-//  if (rightActDeg <= ACTUATOR_MIN_DEG)
-  if (rightActPosMm <= rightActMinPosMm)
+  if (rightActDeg <= ACTUATOR_MIN_DEG)
+//  if (rightActPosMm <= rightActMinPosMm)
   {
     oManualRightLowerLim = 1;
   }
@@ -297,8 +297,8 @@ void StateManual(void)
   {
     oManualRightLowerLim = 0;
   }
-//  if (rightActDeg >= ACTUATOR_MAX_DEG)
-  if (rightActPosMm >= rightActMaxPosMm)
+  if (rightActDeg >= ACTUATOR_MAX_DEG)
+//  if (rightActPosMm >= rightActMaxPosMm)
   {
     oManualRightUpperLim = 1;
   }
@@ -348,8 +348,8 @@ void StateManual(void)
   {
     if (rightActDeg > crabManualCmdDeg)
     {
-//      if (!oManualRightLowerLim)
-      if (!oManualRightUpperLim)
+      if (!oManualRightLowerLim)
+//      if (!oManualRightUpperLim)
       {
         rightActMoves = NEEDS_TO_EXPAND;
       }
@@ -360,8 +360,8 @@ void StateManual(void)
     }
     else
     {
-//      if (!oManualRightUpperLim)
-      if (!oManualRightLowerLim)
+      if (!oManualRightUpperLim)
+//      if (!oManualRightLowerLim)
       {
         rightActMoves = NEEDS_TO_SHRINK;
       }
@@ -758,7 +758,7 @@ void StateAcq(void)
                 ,iAdcSample       =  0
                 ;
   
-  if (oNewManualCmd)
+  if (oNewManualCmd && oManualLeftStopped && oManualRightStopped)
   {
     oNewManualCmd = 0;
     
