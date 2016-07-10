@@ -180,12 +180,15 @@ void StateInit(void)
 //  INIT_WDT;
   INIT_TIMER;
   INIT_ADC;
-  INIT_UART;
+  if (SEND_DATA_TO_UART)
+  {
+    INIT_UART;
+  }
   INIT_SPI;
   INIT_PWM;
 //  INIT_I2C;
   INIT_CAN;
-  INIT_SKADI;
+//  INIT_SKADI;
   START_INTERRUPTS;
 
   // Send ID to backplane by CAN protocol
@@ -794,7 +797,7 @@ void StateAcq(void)
 //  AssessButtons();
 
 //  UINT32 coreTickRate = Timer.Tic(1500, SCALE_US);
-  Skadi.GetCmdMsgFifo();
+//  Skadi.GetCmdMsgFifo();
 //  INT32 time = Timer.Toc(1500, coreTickRate);
 //  UINT8 test = 0;
 }

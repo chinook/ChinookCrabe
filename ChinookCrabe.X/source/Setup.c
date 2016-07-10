@@ -31,6 +31,7 @@
 #include "..\headers\Setup.h"
 #include "..\headers\Interrupts.h"
 #include "..\headers\SkadiFunctions.h"
+#include "..\headers\StateFunctions.h"
 
 
 //==============================================================================
@@ -402,9 +403,12 @@ void StartInterrupts(void)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // Enable UART interrupts        
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  Uart.EnableRxInterrupts (UART6);  // Enable RX Interrupts for UART6
-  Uart.DisableTxInterrupts(UART6);  // Disable TX Interrupts for UART6
-
+  if (SEND_DATA_TO_UART)
+  {
+    Uart.EnableRxInterrupts (UART6);  // Enable RX Interrupts for UART6
+    Uart.DisableTxInterrupts(UART6);  // Disable TX Interrupts for UART6
+  }
+  
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // Enable multi-vector interrupts

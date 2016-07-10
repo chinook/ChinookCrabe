@@ -16,4 +16,6 @@ source/Setup.c  \
  source/../headers/../../../ChinookLib/ChinookLib.X/headers/ChinookWdt.h  \
  source/../headers/Interrupts.h  \
 source/../headers/Setup.h  \
- source/../headers/SkadiFunctions.h 
+ source/../headers/SkadiFunctions.h  \
+source/../headers/StateFunctions.h  \
+ source/../headers/DRV8711_Para.h 
