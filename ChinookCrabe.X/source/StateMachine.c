@@ -42,6 +42,10 @@ float  crabManualCmdMmLeft  = 370.12
       ,rightActPosMm        = 0
       ,leftActDeg           = 0
       ,rightActDeg          = 0
+      ,leftActMinPosMm      = 0
+      ,leftActMaxPosMm      = 0
+      ,rightActMinPosMm     = 0
+      ,rightActMaxPosMm     = 0
       ;
 
 BOOL oNewAdcMeasurement = 0;
@@ -244,6 +248,11 @@ void StateInit(void)
   
   LED_DEBUG0_OFF;
   LED_DEBUG1_OFF;
+  
+  CrabDegToMm(ACTUATOR_MIN_DEG, &leftActMinPosMm , LEFT_ACTUATOR );
+  CrabDegToMm(ACTUATOR_MAX_DEG, &leftActMaxPosMm , LEFT_ACTUATOR );
+  CrabDegToMm(ACTUATOR_MIN_DEG, &rightActMinPosMm, RIGHT_ACTUATOR);
+  CrabDegToMm(ACTUATOR_MAX_DEG, &rightActMaxPosMm, RIGHT_ACTUATOR);
 }
 
 
@@ -257,7 +266,8 @@ void StateManual(void)
   
   // Check for limits
   // =====================================
-  if (leftActDeg <= ACTUATOR_MIN_DEG)
+//  if (leftActDeg <= ACTUATOR_MIN_DEG)
+  if (leftActPosMm <= leftActMinPosMm)
   {
     oManualLeftLowerLim = 1;
   }
@@ -265,7 +275,8 @@ void StateManual(void)
   {
     oManualLeftLowerLim = 0;
   }
-  if (leftActDeg >= ACTUATOR_MAX_DEG)
+//  if (leftActDeg >= ACTUATOR_MAX_DEG)
+  if (leftActPosMm >= leftActMaxPosMm)
   {
     oManualLeftUpperLim = 1;
   }
@@ -274,7 +285,8 @@ void StateManual(void)
     oManualLeftUpperLim = 0;
   }
   
-  if (rightActDeg <= ACTUATOR_MIN_DEG)
+//  if (rightActDeg <= ACTUATOR_MIN_DEG)
+  if (rightActPosMm <= rightActMinPosMm)
   {
     oManualRightLowerLim = 1;
   }
@@ -282,7 +294,8 @@ void StateManual(void)
   {
     oManualRightLowerLim = 0;
   }
-  if (rightActDeg >= ACTUATOR_MAX_DEG)
+//  if (rightActDeg >= ACTUATOR_MAX_DEG)
+  if (rightActPosMm >= rightActMaxPosMm)
   {
     oManualRightUpperLim = 1;
   }
@@ -332,7 +345,8 @@ void StateManual(void)
   {
     if (rightActDeg > crabManualCmdDeg)
     {
-      if (!oManualRightLowerLim)
+//      if (!oManualRightLowerLim)
+      if (!oManualRightUpperLim)
       {
         rightActMoves = NEEDS_TO_EXPAND;
       }
@@ -343,7 +357,8 @@ void StateManual(void)
     }
     else
     {
-      if (!oManualRightUpperLim)
+//      if (!oManualRightUpperLim)
+      if (!oManualRightLowerLim)
       {
         rightActMoves = NEEDS_TO_SHRINK;
       }
