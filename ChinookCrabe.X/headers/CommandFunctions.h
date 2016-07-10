@@ -134,5 +134,14 @@ typedef struct
   UINT16 length;
 } sCmdData_t;
 
+
+typedef enum
+{
+  NEEDS_TO_STOP
+ ,NEEDS_TO_SHRINK
+ ,NEEDS_TO_EXPAND
+} ActuatorMoveFlags_t;
+
+
 #endif	/* __COMMAND_FUNCTIONS__ */
 
