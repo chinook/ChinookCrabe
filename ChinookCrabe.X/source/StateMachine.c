@@ -684,7 +684,8 @@ void StateSendData(void)
 
   static UINT8 iCounterToTwoSec = 0;
   
-  SEND_CRAB_DIR_DEG;  // Via CAN bus
+  SEND_CRAB_LEFT_WHEEL_DEG;  // Via CAN bus
+  SEND_CRAB_RIGHT_WHEEL_DEG; // Via CAN bus
 
   // DRIVE B
   //==========================================================
@@ -750,13 +751,6 @@ void StateAcq(void)
   UINT16 adcLeft  = 0
         ,adcRight = 0
         ;
-  
-  UINT16 i = 0;
-  
-  static UINT16  adcMemLeft[150]  = {0}
-                ,adcMemRight[150] = {0}
-                ,iAdcSample       =  0
-                ;
   
   if (oNewManualCmd && oManualLeftStopped && oManualRightStopped)
   {
