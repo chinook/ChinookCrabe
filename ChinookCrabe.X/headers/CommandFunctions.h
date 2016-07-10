@@ -86,7 +86,7 @@ typedef enum
 //==============================================================================
 // Regulation public functions prototypes
 //==============================================================================
-void TustinZ    (sCmdValue_t *input, sCmdValue_t *output);
+void TustinZ    (sCmdValue_t *input, sCmdValue_t *output, float acqTime);
 
 
 //==============================================================================

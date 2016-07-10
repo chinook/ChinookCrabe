@@ -38,12 +38,10 @@ extern float crabLeftZeroMm
 
 float  crabManualCmdMmLeft  = 370.12
       ,crabManualCmdMmRight = 372.38
-      ;
-
-float  leftActPosMm
-      ,rightActPosMm
-      ,leftActDeg
-      ,rightActDeg
+      ,leftActPosMm         = 0
+      ,rightActPosMm        = 0
+      ,leftActDeg           = 0
+      ,rightActDeg          = 0
       ;
 
 BOOL oNewAdcMeasurement = 0;
@@ -58,8 +56,8 @@ BOOL oManualLeftLowerLim    = 0
     ,oManualRightStopped    = 1
     ;
 
-ActuatorMoveFlags_t  leftActMoves  = {0}
-                    ,rightActMoves = {0}
+ActuatorMoveFlags_t  leftActMoves  = NEEDS_TO_STOP
+                    ,rightActMoves = NEEDS_TO_STOP
                     ;
 
 // Used for the average of the wind angle
@@ -73,14 +71,10 @@ extern volatile sCmdValue_t windAngle
 
 extern volatile BOOL oAdcReady
                     ,oNewWindAngle
-                    ,oTimerReg
                     ,oTimerSendData
-                    ,oTimerChngMode
                     ;
 
 volatile BOOL  oManualMode            = 1
-              ,oCountTimeToChngMode   = 0
-              ,oManualFlagChng        = 0
               ;
 
 
@@ -672,7 +666,7 @@ void StateSendData(void)
 
   static UINT8 iCounterToTwoSec = 0;
   
-//  SEND_CRAB_DIR_DEG;  // Via CAN bus
+  SEND_CRAB_DIR_DEG;  // Via CAN bus
 
   // DRIVE B
   //==========================================================
@@ -721,8 +715,6 @@ void StateSendData(void)
 
       Uart.PutTxFifoBuffer(UART6, &buffer);
     }
-    
-//    WriteMastPos2Eeprom();
   }
 }
 
@@ -754,73 +746,37 @@ void StateAcq(void)
     
     crabManualCmdDeg = tempCrabManualCmdDeg;
     
-    if (crabManualCmdDeg < -15)
+    if (crabManualCmdDeg < ACTUATOR_MIN_DEG)
     {
-      crabManualCmdDeg = -15;
+      crabManualCmdDeg = ACTUATOR_MIN_DEG;
     }
     
-    if (crabManualCmdDeg > 15)
+    if (crabManualCmdDeg > ACTUATOR_MAX_DEG)
     {
-      crabManualCmdDeg = 15;
+      crabManualCmdDeg = ACTUATOR_MAX_DEG;
     }
     
     CrabDegToMm(crabManualCmdDeg, &crabManualCmdMmLeft , LEFT_ACTUATOR );
     CrabDegToMm(crabManualCmdDeg, &crabManualCmdMmRight, RIGHT_ACTUATOR);
   }
-
-//  if (oManualMode)
-//  {
-//    LED_DEBUG0_ON;
-//  }
-//  else
-//  {
-//    LED_DEBUG0_OFF;
-//  }
-
-//  if (oNewWindAngle)
-//  {
-//    nWindAngleSamples++;
-//    memcpy ((void *) &tempWindAngle, (void *) &rxWindAngle, 4);  // Copy contents of UINT32 into float
-//    meanWindAngle += tempWindAngle;
-//  }
   
   if (oAdcReady)
   {
     oAdcReady = 0;
     
-//    adcMemLeft [iAdcSample] = Adc.Var.adcReadValues[3];
-//    adcMemRight[iAdcSample] = Adc.Var.adcReadValues[2];
-//    
-//    iAdcSample++;
-//    
-//    if (iAdcSample >= N_ADC_SAMPLES)
-//    {
-//      for (i = 0; i < iAdcSample; i++)
-//      {
-//        adcLeft   += adcMemLeft [i];
-//        adcRight  += adcMemRight[i];
-//      }
-//      
-//      adcLeft   = (float) adcLeft   / (float) iAdcSample + 0.5;
-//      adcRight  = (float) adcRight  / (float) iAdcSample + 0.5;
-      adcLeft  = Adc.Var.adcReadValues[3];
-      adcRight = Adc.Var.adcReadValues[2];
+    adcLeft  = Adc.Var.adcReadValues[3];
+    adcRight = Adc.Var.adcReadValues[2];
 
-      CrabBitToMm(   adcLeft , &leftActPosMm , LEFT_ACTUATOR );
-      CrabBitToMm(   adcRight, &rightActPosMm, RIGHT_ACTUATOR);
+    CrabBitToMm(   adcLeft , &leftActPosMm , LEFT_ACTUATOR );
+    CrabBitToMm(   adcRight, &rightActPosMm, RIGHT_ACTUATOR);
 
-      CrabMmToDeg(leftActPosMm , &leftActDeg , LEFT_ACTUATOR );
-      CrabMmToDeg(rightActPosMm, &rightActDeg, RIGHT_ACTUATOR);
-      
-//      iAdcSample = 0;
-      
-      oNewAdcMeasurement = 1;
-//    }
+    CrabMmToDeg(leftActPosMm , &leftActDeg , LEFT_ACTUATOR );
+    CrabMmToDeg(rightActPosMm, &rightActDeg, RIGHT_ACTUATOR);
+
+    oNewAdcMeasurement = 1;
   }
 
 //  AssessButtons();
-
-//  AssessMastValues();
 
 //  UINT32 coreTickRate = Timer.Tic(1500, SCALE_US);
   Skadi.GetCmdMsgFifo();

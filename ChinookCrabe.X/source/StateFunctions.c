@@ -47,11 +47,7 @@ volatile sButtonStates_t buttons =
  ,.buttons.bits.boardSw3 = 1
 };
 
-extern volatile BOOL oTimerReg                // From TIMER 1
-                    ,oTimerChngMode           // Flag used when changing mode
-                    ,oManualMode
-                    ,oCountTimeToChngMode     // Flag used when changing mode
-                    ,oManualFlagChng          // In manual mode, indicates that a change has occured on the buttons
+extern volatile BOOL oManualMode
                     ;
 
 extern float crabLeftZeroMm

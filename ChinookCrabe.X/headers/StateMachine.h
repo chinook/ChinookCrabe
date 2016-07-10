@@ -63,7 +63,6 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 /*********** BASIC CONDITION *****************/
 #define MANUAL_MODE           oManualMode
 #define NEW_MEASUREMENT       oNewAdcMeasurement
-#define REG_TIMER_OK          oTimerReg
 #define SEND_DATA_TIMER_OK    oTimerSendData
 
 #define N_ADC_SAMPLES         100

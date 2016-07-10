@@ -353,11 +353,11 @@ void StartInterrupts(void)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // Enable timer interrupts
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  Timer.EnableInterrupt(TIMER_1);
-  Timer.EnableInterrupt(TIMER_2);
-  Timer.EnableInterrupt(TIMER_3);
+//  Timer.EnableInterrupt(TIMER_1);
+//  Timer.EnableInterrupt(TIMER_2);
+//  Timer.EnableInterrupt(TIMER_3);
   Timer.EnableInterrupt(TIMER_4);
-  Timer.EnableInterrupt(TIMER_5);
+//  Timer.EnableInterrupt(TIMER_5);
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

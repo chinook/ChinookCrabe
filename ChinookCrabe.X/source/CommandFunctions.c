@@ -80,57 +80,6 @@ volatile sCmdValue_t windAngle          = {0}
 //=====================================
 
 
-// PI values
-//=====================================
-sCmdValue_t  inPi   = {0}
-            ,outPi  = {0}
-            ;
-
-// Regulator parameters
-
-/*
- * These are the tested working values WITH the mast attached to the motor
- * shaft, but WITHOUT the blades.
- */
-volatile float KP = 0.010f
-              ,KI = 0.010f
-              ,K  = 0.100f
-              ,PWM_MAX_DUTY_CYCLE = 0.900f
-              ,PWM_MIN_DUTY_CYCLE = 0.030f
-              ,ERROR_THRESHOLD    = 4.000f
-              ,T                  = 0.100f    // Same as TIMER_1
-              ;
-/*
- * These are the tested working values WITHOUT the mast attached to the motor
- * shaft.
- */
-//volatile float KP = 0.015f
-//              ,KI = 0.030f
-//              ,K  = 0.300f
-//              ,PWM_MAX_DUTY_CYCLE = 0.980f
-//              ,PWM_MIN_DUTY_CYCLE = 0.010f
-//              ,ERROR_THRESHOLD    = 0.100f
-////              ,T                  = 0.100f    // Same as TIMER_1
-//              ,T                  = 1.000f    // Same as TIMER_1
-//              ;
-//=====================================
-
-
-// Flags
-//=====================================
-extern volatile BOOL oCapture1
-                    ,oCapture2
-                    ,oCapture3
-                    ,oCapture4
-                    ,oTimerReg
-                    ;
-
-BOOL  oFirstTimeInMastStop    = 0
-     ,oEmergencyStop          = 0
-     ;
-//=====================================
-
-
 //==============================================================================
 // Mast regulation functions
 //==============================================================================
@@ -153,10 +102,10 @@ BOOL  oFirstTimeInMastStop    = 0
  *  iLaplace => y(n) = y(n-1) + T/2 * ( x(n-1) + x(n) )
  *
  */
-void TustinZ (sCmdValue_t *input, sCmdValue_t *output)
+void TustinZ (sCmdValue_t *input, sCmdValue_t *output, float acqTime)
 {
   output->previousValue = output->currentValue;
-  output->currentValue  = output->previousValue + T/2 * (input->currentValue + input->previousValue);
+  output->currentValue  = output->previousValue + acqTime/2 * (input->currentValue + input->previousValue);
 }
 
 

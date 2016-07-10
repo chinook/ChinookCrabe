@@ -299,7 +299,7 @@ BYTE Can1MessageFifoArea [ CAN_NB_CHANNELS     // Space used by CAN
 #define SEND_DISCONNECT_TO_BACKPLANE  Can.SendByte(CAN1, DISCONNECT_FROM_BACKPLANE, CRAB_DISCONNECT_SID)
 
 // Message 2 : Crab orientation in degree
-#define SEND_CRAB_DIR_DEG             Can.SendFloat(CAN1, CRAB_DIRECTION_DEG_SID, mastAngle.currentValue)
+#define SEND_CRAB_DIR_DEG             Can.SendFloat(CAN1, CRAB_DIRECTION_DEG_SID, (leftActDeg + rightActDeg) / 2)
 
 // Message 3 : Crab mode of operation
 #define SEND_MODE_TO_STEERING_WHEEL   Can.SendByte(CAN1, CRAB_MODE_SID, (BYTE) oManualMode)
@@ -308,7 +308,7 @@ BYTE Can1MessageFifoArea [ CAN_NB_CHANNELS     // Space used by CAN
 #define SEND_CALIB_DONE               Can.SendByte(CAN1, CRAB_CALIB_DONE_SID, 1)
 
 // Message 5 : Crab orientation in mm
-#define SEND_CRAB_DIR_MM              Can.SendFloat(CAN1, CRAB_DIRECTION_MM_SID, mastAngle.currentValue)
+#define SEND_CRAB_DIR_MM              Can.SendFloat(CAN1, CRAB_DIRECTION_MM_SID, (leftActPosMm + rightActPosMm) / 2)
 
 
 #endif	/* __SETUP_H__ */

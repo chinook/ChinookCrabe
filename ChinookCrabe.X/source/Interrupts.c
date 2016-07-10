@@ -30,21 +30,15 @@
 #include "..\headers\CommandFunctions.h"
 
 volatile BOOL  oNewWindAngle  = 0
-              ,oTimerReg      = 0
               ,oTimerSendData = 0
               ,oAdcReady      = 0
               ;
-
-UINT8 iMastStop = 0;
-INT8  mastDir = 0;
 
 volatile UINT32 rxWindAngle = 0;  // Received from CAN
 
 extern volatile BOOL  oManualMode
                      ,oNewManualCmd
                      ;
-
-//extern volatile float crabManualCmdDeg;
 
 volatile float tempCrabManualCmdDeg = 0;
 
@@ -59,8 +53,6 @@ extern volatile sButtonStates_t buttons;
 //=============================================
 void __ISR(_TIMER_1_VECTOR, T1_INTERRUPT_PRIORITY) Timer1InterruptHandler(void)
 {
-  oTimerReg = 1;
-
   // Increment the number of overflows from this timer. Used primarily by Input Capture
   Timer.Var.nOverflows[0]++;
 
