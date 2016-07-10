@@ -32,12 +32,7 @@
 void StateInit        (void);     // Initialization state of the system
 void StateManual      (void);     // Assess manual flags and adjust the mast in consequence
 void StateAcq         (void);     // Get data from peripherals
-void StateDisconnect  (void);     // Send disconnect msg to backplane
-void StateClose       (void);     // Close all peripheral and enter sleep mode
 void StateSendData    (void);     // Send various data to other devices
-void StateReg         (void);     // Regulate the mast
-void StateIdle        (void);     // Wait for power-down
-void StateGetMastData (void);     // Get position of mast if in manual mode
 void StateScheduler   (void);     // State Scheduler. Decides which state is next
 
 
@@ -62,27 +57,14 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*********** LIMITS **/
-#define MAST_MAX               90.0f
-#define MAST_MIN              -90.0f
-
 #define ACTUATOR_MIN_DEG      -15.0f
 #define ACTUATOR_MAX_DEG       15.0f
 
 /*********** BASIC CONDITION *****************/
-#define MAST_LEFT             (oManualMastLeft)
-#define MAST_RIGHT            (oManualMastRight)
-#define MAST_OK               (!oManualMastLeft && !oManualMastRight)
-#define MAST_MAX_OK           (mastAngle.currentValue <= MAST_MAX)
-#define MAST_MIN_OK           (mastAngle.currentValue >= MAST_MIN)
-#define MAST_DIR_DOWN         SW1
-#define MAST_DIR_UP           !MAST_DIR_DOWN
 #define MANUAL_MODE           oManualMode
 #define NEW_MEASUREMENT       oNewAdcMeasurement
-#define DISCONNECT_OK         0                                   // Need to be coded
 #define REG_TIMER_OK          oTimerReg
 #define SEND_DATA_TIMER_OK    oTimerSendData
-
-#define PULSE_PER_DEGREE      30
 
 #define N_ADC_SAMPLES         100
 
@@ -100,14 +82,7 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 /******* TRANSITION CONDITION ACQ **********/
 #define ACQ_2_MANUAL           MANUAL_MODE && NEW_MEASUREMENT
-#define ACQ_2_DISCONNECT       DISCONNECT_OK
-#define ACQ_2_REG              0//!MANUAL_MODE && REG_TIMER_OK
-#define ACQ_2_GET_MAST_DATA    0//MANUAL_MODE && REG_TIMER_OK
 #define ACQ_2_SEND_DATA        SEND_DATA_TIMER_OK
-
-
-/******* TRANSITION CONDITION GET MAST DATA **********/
-#define GET_MAST_DATA_2_ACQ    0//1
 
 
 /******* TRANSITION CONDITION SEND DATA **********/
@@ -116,22 +91,6 @@ void (*pStateMast)(void);       // State pointer, used to navigate between state
 
 /******* TRANSITION CONDITION MANUAL **********/
 #define MANUAL_2_ACQ           1
-
-
-/******* TRANSITION CONDITION REG **********/
-#define REG_2_ACQ              1
-
-
-/******* TRANSITION CONDITION DISCONNECT **********/
-#define DISCONNECT_2_CLOSE     0//1
-
-
-/******* TRANSITION CONDITION CLOSE **********/
-#define CLOSE_2_IDLE           0//1
-
-
-/******* TRANSITION CONDITION IDLE **********/
-#define IDLE_2_INIT            0
 
 
 #endif	/* STATE_MACHINE_MAST_H */

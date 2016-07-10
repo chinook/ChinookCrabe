@@ -54,15 +54,7 @@ void InitUart         (void);
 void InitI2c          (void);
 void InitSkadi        (void);
 void InitWdt          (void);
-void InitInputCapture (void);
 void StartInterrupts  (void);
-
-
-//==============================================================================
-// Which drive to use
-//==============================================================================
-#define USE_DRIVE_A   1
-#define USE_DRIVE_B   1
 
 //==============================================================================
 // Macro definitions
@@ -77,7 +69,6 @@ void StartInterrupts  (void);
 #define INIT_ADC            InitAdc()
 #define INIT_SKADI          InitSkadi()
 #define INIT_WDT            InitWdt()
-#define INIT_INPUT_CAPTURE  InitInputCapture()
 #define START_INTERRUPTS    StartInterrupts()
 
 //==============================================================================

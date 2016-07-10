@@ -56,12 +56,6 @@ BOOL oManualLeftLowerLim    = 0
     ,oManualRightUpperLim   = 0
     ,oManualLeftStopped     = 1
     ,oManualRightStopped    = 1
-    ,oLeftActNeedsToShrink  = 0
-    ,oLeftActNeedsToExpand  = 0
-    ,oLeftActNeedsToStop    = 1
-    ,oRightActNeedsToExpand = 0
-    ,oRightActNeedsToShrink = 0
-    ,oRightActNeedsToStop   = 1
     ;
 
 ActuatorMoveFlags_t  leftActMoves  = {0}
@@ -75,13 +69,7 @@ extern volatile float  meanWindAngle;
 //========================================
 
 extern volatile sCmdValue_t windAngle
-                           ,mastAngle
-                           ,mastSpeed
                            ;
-
-// Mast general value
-volatile float mastCurrentSpeed   = 0   // Actual speed of Mast
-              ;
 
 extern volatile BOOL oAdcReady
                     ,oNewWindAngle
@@ -93,8 +81,6 @@ extern volatile BOOL oAdcReady
 volatile BOOL  oManualMode            = 1
               ,oCountTimeToChngMode   = 0
               ,oManualFlagChng        = 0
-              ,oManualMastRight       = 0
-              ,oManualMastLeft        = 0
               ;
 
 
@@ -115,21 +101,9 @@ void StateScheduler(void)
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   if (pStateMast == &StateAcq)
   {
-    if (ACQ_2_DISCONNECT)
-    {
-      pStateMast = &StateDisconnect;
-    }
-    else if (ACQ_2_MANUAL)
+    if (ACQ_2_MANUAL)
     {
       pStateMast = &StateManual;
-    }
-    else if (ACQ_2_REG)
-    {
-      pStateMast = &StateReg;
-    }
-    else if (ACQ_2_GET_MAST_DATA)
-    {
-      pStateMast = &StateGetMastData;
     }
     else if (ACQ_2_SEND_DATA)
     {
@@ -138,21 +112,6 @@ void StateScheduler(void)
     else
     {
       pStateMast = &StateAcq;    // Stay in current state
-    }
-  }
-
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  // Current state = StateReg
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  else if (pStateMast == &StateReg)
-  {
-    if (REG_2_ACQ)
-    {
-      pStateMast = &StateAcq;
-    }
-    else
-    {
-      pStateMast = &StateReg;    // Stay in current state
     }
   }
 
@@ -198,36 +157,6 @@ void StateScheduler(void)
     else
     {
       pStateMast = &StateInit;    // Stay in current state
-    }
-  }
-
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  // Current state = StateDisconnect
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  else if (pStateMast == &StateDisconnect)
-  {
-    if (DISCONNECT_2_CLOSE)
-    {
-      pStateMast = &StateClose;
-    }
-    else
-    {
-      pStateMast = &StateDisconnect;    // Stay in current state
-    }
-  }
-
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  // Current state = StateClose
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  else if (pStateMast == &StateClose)
-  {
-    if (CLOSE_2_IDLE)
-    {
-      pStateMast = &StateIdle;
-    }
-    else
-    {
-      pStateMast = &StateClose;    // Stay in current state
     }
   }
 
@@ -374,9 +303,6 @@ void StateManual(void)
   if (AbsFloat(leftActDeg - crabManualCmdDeg) <= CRAB_ERROR)
   {
     leftActMoves = NEEDS_TO_STOP;
-//    oLeftActNeedsToStop   = 1;
-//    oLeftActNeedsToShrink = 0;
-//    oLeftActNeedsToExpand = 0;
   }
   else
   {
@@ -385,16 +311,10 @@ void StateManual(void)
       if (!oManualLeftLowerLim)
       {
         leftActMoves = NEEDS_TO_SHRINK;
-//        oLeftActNeedsToStop   = 0;
-//        oLeftActNeedsToShrink = 1;
-//        oLeftActNeedsToExpand = 0;
       }
       else
       {
         leftActMoves = NEEDS_TO_STOP;
-//        oLeftActNeedsToStop   = 1;
-//        oLeftActNeedsToShrink = 0;
-//        oLeftActNeedsToExpand = 0;
       }
     }
     else
@@ -402,16 +322,10 @@ void StateManual(void)
       if (!oManualLeftUpperLim)
       {
         leftActMoves = NEEDS_TO_EXPAND;
-//        oLeftActNeedsToStop   = 0;
-//        oLeftActNeedsToShrink = 0;
-//        oLeftActNeedsToExpand = 1;
       }
       else
       {
         leftActMoves = NEEDS_TO_STOP;
-//        oLeftActNeedsToStop   = 1;
-//        oLeftActNeedsToShrink = 0;
-//        oLeftActNeedsToExpand = 0;
       }
     }
   }
@@ -419,9 +333,6 @@ void StateManual(void)
   if (AbsFloat(rightActDeg - crabManualCmdDeg) <= CRAB_ERROR)
   {
     rightActMoves = NEEDS_TO_STOP;
-//    oRightActNeedsToStop   = 1;
-//    oRightActNeedsToShrink = 0;
-//    oRightActNeedsToExpand = 0;
   }
   else
   {
@@ -430,16 +341,10 @@ void StateManual(void)
       if (!oManualRightLowerLim)
       {
         rightActMoves = NEEDS_TO_EXPAND;
-//        oRightActNeedsToStop   = 0;
-//        oRightActNeedsToShrink = 0;
-//        oRightActNeedsToExpand = 1;
       }
       else
       {
         rightActMoves = NEEDS_TO_STOP;
-//        oRightActNeedsToStop   = 1;
-//        oRightActNeedsToShrink = 0;
-//        oRightActNeedsToExpand = 0;
       }
     }
     else
@@ -447,16 +352,10 @@ void StateManual(void)
       if (!oManualRightUpperLim)
       {
         rightActMoves = NEEDS_TO_SHRINK;
-//        oRightActNeedsToStop   = 0;
-//        oRightActNeedsToShrink = 1;
-//        oRightActNeedsToExpand = 0;
       }
       else
       {
         rightActMoves = NEEDS_TO_STOP;
-//        oRightActNeedsToStop   = 1;
-//        oRightActNeedsToShrink = 0;
-//        oRightActNeedsToExpand = 0;
       }
     }
   }
@@ -764,94 +663,6 @@ void StateManual(void)
 
 
 //===============================================================
-// Name     : StateReg
-// Purpose  : Regulate the mast
-//===============================================================
-void StateReg(void)
-{
-  oTimerReg = 0;
-
-  Regulator();
-}
-
-
-//===============================================================
-// Name     : StateDisconnect
-// Purpose  : Send a disconnect message to the backplane
-//===============================================================
-void StateDisconnect(void)
-{
-  if (mastCurrentSpeed != 0)
-  {
-    MastManualStop();
-  }
-
-  WriteMastPos2Eeprom();
-  
-  SEND_DISCONNECT_TO_BACKPLANE;
-}
-
-
-//===============================================================
-// Name     : StateClose
-// Purpose  : Close all peripherals and put device in sleep mode
-//===============================================================
-void StateClose(void)
-{
-
-  INTDisableInterrupts();   // Disable all interrupts of the system.
-
-//  Wdt.Disable();
-  
-  LED_ALL_OFF();
-
-  I2c.Close(I2C4);
-
-  // DRIVE B
-  //==========================================================
-  if (USE_DRIVE_B == 1)
-  {
-    Pwm.Close(PWM_2);
-    Pwm.Close(PWM_3);
-  }
-  //==========================================================
-
-  // DRIVE A
-  //==========================================================
-  if (USE_DRIVE_A == 1)
-  {
-    Pwm.Close(PWM_4);
-    Pwm.Close(PWM_5);
-  }
-  //==========================================================
-
-  Spi.Close(SPI4);
-
-//  Can.Close(CAN1);
-
-  Uart.Close(UART6);
-
-  Timer.Close(TIMER_1);
-  Timer.Close(TIMER_2);
-  Timer.Close(TIMER_3);
-  Timer.Close(TIMER_5);
-
-//  OSCCONSET = 0x10;         // Sleep mode
-
-}
-
-
-//===============================================================
-// Name     : StateIdle
-// Purpose  : Wait for power-off
-//===============================================================
-void StateIdle(void)
-{
-  return;
-}
-
-
-//===============================================================
 // Name     : StateSendData
 // Purpose  : Send useful data to other devices
 //===============================================================
@@ -865,18 +676,12 @@ void StateSendData(void)
 
   // DRIVE B
   //==========================================================
-  if (USE_DRIVE_B == 1)
-  {
-    WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors
-  }
+  WriteDrive(DRVB, STATUS_Mastw);   // Reset any errors
   //==========================================================
 
   // DRIVE A
   //==========================================================
-  if (USE_DRIVE_A == 1)
-  {
-    WriteDrive(DRVA, STATUS_Mastw);   // Reset any errors
-  }
+  WriteDrive(DRVA, STATUS_Mastw);   // Reset any errors
   //==========================================================
 
   if (iCounterToTwoSec < 10)

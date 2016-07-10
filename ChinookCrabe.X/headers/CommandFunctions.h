@@ -30,15 +30,6 @@
 //==============================================================================
 // Macro definitions
 //==============================================================================
-#define MAST_DIR_LEFT               -1
-#define MAST_DIR_RIGHT               1
-
-#define MOTOR_ENCODER_RATIO         49.0f
-#define MAST_MOTOR_RATIO            50.0f
-
-#define MOTOR_DEG_PER_PULSE         360.0f/245.0f
-
-#define N_DATA_TO_ACQ               300   // Used when debugging with SKADI
 
 #define VREF_PLUS                   2.992f
 #define ACTUATOR_MAX_POS            167.57f   // in mm
@@ -93,17 +84,14 @@ typedef enum
 
 
 //==============================================================================
-// Mast regulation public functions prototypes
+// Regulation public functions prototypes
 //==============================================================================
 void TustinZ    (sCmdValue_t *input, sCmdValue_t *output);
-void SetPwm     (float cmd);
-void Regulator  (void);
 
-// Input capture functions
-// =======================================
-void AssessMastValues (void);
-// =======================================
 
+//==============================================================================
+// Crab public functions prototypes
+//==============================================================================
 void Interpol2D (float x0, float y0, float x1, float y1, float x, float *y);
 void CrabVoltToMm (float volt, float *mm, CrabActuator_t act);
 INT8 CrabDegToMm (INT8 deg, float *mm, CrabActuator_t act);
@@ -114,26 +102,6 @@ void CrabBitToMm (UINT16 bit, float *mm, CrabActuator_t act);
 // Various MATH functions
 #define ABS(x)  ( (x >= 0)?  x : -x )
 #define SIGN(x) ( (x >= 0)?  1 : -1 )
-
-
-// Used for debugging with SKADI
-typedef struct
-{
-  float windPrevious  [N_DATA_TO_ACQ];
-  float windCurrent   [N_DATA_TO_ACQ];
-  float posPrevious   [N_DATA_TO_ACQ];
-  float posCurrent    [N_DATA_TO_ACQ];
-  float speedPrevious [N_DATA_TO_ACQ];
-  float speedCurrent  [N_DATA_TO_ACQ];
-  float error         [N_DATA_TO_ACQ];
-  float inPiPrevious  [N_DATA_TO_ACQ];
-  float inPiCurrent   [N_DATA_TO_ACQ];
-  float outPiPrevious [N_DATA_TO_ACQ];
-  float outPiCurrent  [N_DATA_TO_ACQ];
-  float cmd           [N_DATA_TO_ACQ];
-  UINT16 length;
-} sCmdData_t;
-
 
 typedef enum
 {

@@ -88,45 +88,12 @@ void ReInitSystem();
 void SetWind();
 
 /**************************************************************
- * Function name  : SetMode
- * Purpose        : Set the mast mode of operation
- * Arguments      : 1 : Manual mode
- *                  0 : Auto mode
- * Returns        : None.
- *************************************************************/
-void SetMode();
-
-/**************************************************************
- * Function name  : SetPos
- * Purpose        : Set the mast angle
- * Arguments      : Received from Skadi functions
- * Returns        : None.
- *************************************************************/
-void SetPos();
-
-/**************************************************************
- * Function name  : GetPos
- * Purpose        : Send the mast angle
- * Arguments      : None.
- * Returns        : None.
- *************************************************************/
-void GetPos();
-
-/**************************************************************
  * Function name  : GetWind
  * Purpose        : Send the wind angle
  * Arguments      : None.
  * Returns        : None.
  *************************************************************/
 void GetWind();
-
-/**************************************************************
- * Function name  : GetSpeed
- * Purpose        : Send the mast current speed [deg/s]
- * Arguments      : None.
- * Returns        : None.
- *************************************************************/
-void GetSpeed();
 
 /**************************************************************
  * Function name  : GetMode
@@ -151,22 +118,6 @@ void ClearScreen();
  * Returns        : None.
  *************************************************************/
 void WriteStatus();
-
-/**************************************************************
- * Function name  : SetParam
- * Purpose        : Adjust one of the regulator parameters (K, KI or KP)
- * Arguments      : Received from Skadi functions
- * Returns        : None.
- *************************************************************/
-void SetParam();
-
-/**************************************************************
- * Function name  : GetParam
- * Purpose        : Send the current mast parameters K, KI, KP
- * Arguments      : None.
- * Returns        : None.
- *************************************************************/
-void GetParam();
 
 /**************************************************************
  * Function name  : SetCrabManualCmd

@@ -33,20 +33,6 @@
 // State Machine public functions prototypes
 //==============================================================================
 
-// EEPROM functions
-// =======================================
-void  WriteMastPos2Eeprom   (void);
-void ReadMastPosFromEeprom (void);
-// =======================================
-
-
-// Mast manual functions
-// =======================================
-void MastManualStop  (void);
-void MastManualLeft  (void);
-void MastManualRight (void);
-// =======================================
-
 
 // Buttons functions
 // =======================================

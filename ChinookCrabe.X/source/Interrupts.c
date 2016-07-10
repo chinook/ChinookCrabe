@@ -29,19 +29,9 @@
 #include "..\headers\StateFunctions.h"
 #include "..\headers\CommandFunctions.h"
 
-volatile BOOL  oCapture1      = 0
-              ,oCapture2      = 0
-              ,oCapture3      = 0
-              ,oCapture4      = 0
-              ,oNewWindAngle  = 0
+volatile BOOL  oNewWindAngle  = 0
               ,oTimerReg      = 0
               ,oTimerSendData = 0
-              ,oTimerChngMode = 0
-              ,oEnableMastStopProcedure = 0
-              ,oFirstCapture1 = 1
-              ,oFirstCapture2 = 1
-              ,oFirstCapture3 = 1
-              ,oFirstCapture4 = 1
               ,oAdcReady      = 0
               ;
 
@@ -51,11 +41,8 @@ INT8  mastDir = 0;
 volatile UINT32 rxWindAngle = 0;  // Received from CAN
 
 extern volatile BOOL  oManualMode
-                     ,oCountTimeToChngMode
                      ,oNewManualCmd
                      ;
-
-extern volatile float mastCurrentSpeed;
 
 //extern volatile float crabManualCmdDeg;
 
@@ -85,97 +72,6 @@ void __ISR(_TIMER_1_VECTOR, T1_INTERRUPT_PRIORITY) Timer1InterruptHandler(void)
 //=============================================
 void __ISR(_TIMER_2_VECTOR, T2_INTERRUPT_PRIORITY) Timer2InterruptHandler(void)
 {
-  /*
-   * Following code performs a smooth stop. It goes from 30% speed to 0 in order
-   * to have a smooth curve. Used in manual mode and for emergency stops in
-   * automatic mode (if the mast is too far).
-   */
-  if (oEnableMastStopProcedure)
-  {
-    if (iMastStop == 0)
-    {
-      mastDir = SIGN(mastCurrentSpeed);
-    }
-
-    if (iMastStop < 16)
-    {
-      DRVB_SLEEP = 1;
-
-      if (mastDir == MAST_DIR_LEFT)
-      {
-        // DRIVE B
-        //==========================================================
-        if (USE_DRIVE_B == 1)
-        {
-          Pwm.SetDutyCycle(PWM_2, 500 + (150 - iMastStop*10));
-          Pwm.SetDutyCycle(PWM_3, 500 - (150 - iMastStop*10));
-        }
-        //==========================================================
-          
-        // DRIVE A
-        //==========================================================
-        if (USE_DRIVE_A == 1)
-        {
-          Pwm.SetDutyCycle(PWM_4, 500 + (150 - iMastStop*10));
-          Pwm.SetDutyCycle(PWM_5, 500 - (150 - iMastStop*10));
-        //==========================================================
-        }
-      }
-      else if (mastDir == MAST_DIR_RIGHT)
-      {
-        // DRIVE B
-        //==========================================================
-        if (USE_DRIVE_B == 1)
-        {
-          Pwm.SetDutyCycle(PWM_2, 500 - (150 - iMastStop*10));
-          Pwm.SetDutyCycle(PWM_3, 500 + (150 - iMastStop*10));
-        }
-        //==========================================================
-
-        // DRIVE A
-        //==========================================================
-        if (USE_DRIVE_A == 1)
-        {
-          Pwm.SetDutyCycle(PWM_4, 500 - (150 - iMastStop*10));
-          Pwm.SetDutyCycle(PWM_5, 500 + (150 - iMastStop*10));
-        }
-        //==========================================================
-      }
-      iMastStop++;
-    }
-    else
-    {
-      iMastStop = 0;
-      mastDir   = 0;
-
-      // DRIVE B
-      //==========================================================
-      if (USE_DRIVE_B == 1)
-      {
-        Pwm.SetDutyCycle(PWM_2, 500);
-        Pwm.SetDutyCycle(PWM_3, 500);
-
-        DRVB_SLEEP = 0;
-      }
-      //==========================================================
-
-      // DRIVE A
-      //==========================================================
-      if (USE_DRIVE_A == 1)
-      {
-        Pwm.SetDutyCycle(PWM_4, 500);
-        Pwm.SetDutyCycle(PWM_5, 500);
-
-        DRVA_SLEEP = 0;
-      }
-      //==========================================================
-
-      oEnableMastStopProcedure = 0;
-
-      mastCurrentSpeed = 0;
-    }
-  }
-
   // Increment the number of overflows from this timer. Used primarily by Input Capture
   Timer.Var.nOverflows[1]++;
 
@@ -187,7 +83,6 @@ void __ISR(_TIMER_2_VECTOR, T2_INTERRUPT_PRIORITY) Timer2InterruptHandler(void)
 //=============================================
 void __ISR(_TIMER_3_VECTOR, T3_INTERRUPT_PRIORITY) Timer3InterruptHandler(void)
 {
-
   // Increment the number of overflows from this timer. Used primarily by Input Capture
   Timer.Var.nOverflows[2]++;
 
@@ -212,8 +107,6 @@ void __ISR(_TIMER_4_VECTOR, T4_INTERRUPT_PRIORITY) Timer4InterruptHandler(void)
 //=============================================
 void __ISR(_TIMER_5_VECTOR, T5_INTERRUPT_PRIORITY) Timer5InterruptHandler(void)
 {
-  oTimerChngMode = 1;
-
   // Increment the number of overflows from this timer. Used primarily by Input Capture
   Timer.Var.nOverflows[4]++;
 
@@ -331,153 +224,6 @@ void __ISR(_UART_6_VECTOR, U6_INTERRUPT_PRIORITY) Uart6InterruptHandler(void)
   //===========================================================
 }
 //=============================================
-
-
-/*******************************************************************************
- ***********************                               *************************
- ********************      INPUT CAPTURE INTERRUPTS       **********************
- ***********************                               *************************
- ******************************************************************************/
-
-//================================================
-// Configure the InputCapture 1 interrupt handler
-//================================================
-void __ISR(_INPUT_CAPTURE_1_VECTOR, IC1_INT_PRIORITY) InputCapture1InterruptHandler(void)
-{
-  /*
-   * DEVELOPPER CODE HERE
-   */
-
-  // Get the timer used by this Input Capture
-  TimerNum_t numTimer = InputCapture.Var.timerUsed[IC1];
-
-  // Wait for capture data to be ready
-  while(!(InputCapture.IsCaptureReady(IC1)));
-
-  // Update values of timer overflows
-  InputCapture.Var.previousTimerOverflows[IC1] = InputCapture.Var.currentTimerOverflows[IC1];
-  InputCapture.Var.currentTimerOverflows[IC1]  = Timer.ReadOverflows(numTimer);
-
-  // Store the timer value of the capture event
-  InputCapture.Var.previousCaptureCountValue[IC1] = InputCapture.Var.currentCaptureCountValue[IC1];
-  InputCapture.Var.currentCaptureCountValue [IC1] = InputCapture.ReadCapture(IC1);
-
-  if (!oFirstCapture1)
-  {
-    oCapture1 = 1;   // Flag that tells that a new Capture event occured
-  }
-  else
-  {
-    oFirstCapture1 = 0;
-  }
-
-  // Clear the interrupt flag
-  INTClearFlag(INT_IC1);
-}
-//================================================
-
-//================================================
-// Configure the InputCapture 2 interrupt handler
-//================================================
-void __ISR(_INPUT_CAPTURE_2_VECTOR, IC2_INT_PRIORITY) InputCapture2InterruptHandler(void)
-{
-  // Get the timer used by this Input Capture
-  TimerNum_t numTimer = InputCapture.Var.timerUsed[IC2];
-
-  // Wait for capture data to be ready
-  while(!(InputCapture.IsCaptureReady(IC2)));
-
-  // Update values of timer overflows
-  InputCapture.Var.previousTimerOverflows[IC2] = InputCapture.Var.currentTimerOverflows[IC2];
-  InputCapture.Var.currentTimerOverflows[IC2]  = Timer.ReadOverflows(numTimer);
-
-  // Store the timer value of the capture event
-  InputCapture.Var.previousCaptureCountValue[IC2] = InputCapture.Var.currentCaptureCountValue[IC2];
-  InputCapture.Var.currentCaptureCountValue [IC2] = InputCapture.ReadCapture(IC2);
-
-  if (!oFirstCapture2)
-  {
-    oCapture2 = 1;   // Flag that tells that a new Capture event occured
-  }
-  else
-  {
-    oFirstCapture2 = 0;
-  }
-
-  // Clear the interrupt flag
-  INTClearFlag(INT_IC2);
-}
-//================================================
-
-//================================================
-// Configure the InputCapture 3 interrupt handler
-//================================================
-void __ISR(_INPUT_CAPTURE_3_VECTOR, IC3_INT_PRIORITY) InputCapture3InterruptHandler(void)
-{
-  /*
-   * DEVELOPPER CODE HERE
-   */
-
-  // Get the timer used by this Input Capture
-  TimerNum_t numTimer = InputCapture.Var.timerUsed[IC3];
-
-  // Wait for capture data to be ready
-  while(!(InputCapture.IsCaptureReady(IC3)));
-
-  // Update values of timer overflows
-  InputCapture.Var.previousTimerOverflows[IC3] = InputCapture.Var.currentTimerOverflows[IC3];
-  InputCapture.Var.currentTimerOverflows[IC3]  = Timer.ReadOverflows(numTimer);
-
-  // Store the timer value of the capture event
-  InputCapture.Var.previousCaptureCountValue[IC3] = InputCapture.Var.currentCaptureCountValue[IC3];
-  InputCapture.Var.currentCaptureCountValue [IC3] = InputCapture.ReadCapture(IC3);
-
-  if (!oFirstCapture3)
-  {
-    oCapture3 = 1;   // Flag that tells that a new Capture event occured
-  }
-  else
-  {
-    oFirstCapture3 = 0;
-  }
-
-  // Clear the interrupt flag
-  INTClearFlag(INT_IC3);
-}
-//================================================
-
-//================================================
-// Configure the InputCapture 4 interrupt handler
-//================================================
-void __ISR(_INPUT_CAPTURE_4_VECTOR, IC4_INT_PRIORITY) InputCapture4InterruptHandler(void)
-{
-  // Get the timer used by this Input Capture
-  TimerNum_t numTimer = InputCapture.Var.timerUsed[IC4];
-
-  // Wait for capture data to be ready
-  while(!(InputCapture.IsCaptureReady(IC4)));
-
-  // Update values of timer overflows
-  InputCapture.Var.previousTimerOverflows[IC4] = InputCapture.Var.currentTimerOverflows[IC4];
-  InputCapture.Var.currentTimerOverflows[IC4]  = Timer.ReadOverflows(numTimer);
-
-  // Store the timer value of the capture event
-  InputCapture.Var.previousCaptureCountValue[IC4] = InputCapture.Var.currentCaptureCountValue[IC4];
-  InputCapture.Var.currentCaptureCountValue [IC4] = InputCapture.ReadCapture(IC4);
-
-  if (!oFirstCapture4)
-  {
-    oCapture4 = 1;   // Flag that tells that a new Capture event occured
-  }
-  else
-  {
-    oFirstCapture4 = 0;
-  }
-
-  // Clear the interrupt flag
-  INTClearFlag(INT_IC4);
-}
-//================================================
 
 
 /*******************************************************************************

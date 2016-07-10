@@ -189,45 +189,39 @@ void InitDriver(void)
 
   // DRIVE B
   //==========================================================
-  if (USE_DRIVE_B == 1)
-  {
-    Timer.DelayMs(1);
-    DRVB_RESET = 0;
-    Timer.DelayMs(1);
-    DRVB_SLEEP = 0;
-    Timer.DelayMs(1);
+  Timer.DelayMs(1);
+  DRVB_RESET = 0;
+  Timer.DelayMs(1);
+  DRVB_SLEEP = 0;
+  Timer.DelayMs(1);
 
-    WriteDrive(DRVB, CONTROL_Mastw);
-    WriteDrive(DRVB, TORQUE_Mastw);
-    WriteDrive(DRVB, OFF_Mastw);
-    WriteDrive(DRVB, BLANK_Mastw);
-    WriteDrive(DRVB, STALL_Mastw);
-    WriteDrive(DRVB, DRIVE_Mastw);
-    WriteDrive(DRVB, 0x2180);
-    WriteDrive(DRVB, STATUS_Mastw);
-  }
+  WriteDrive(DRVB, CONTROL_Mastw);
+  WriteDrive(DRVB, TORQUE_Mastw);
+  WriteDrive(DRVB, OFF_Mastw);
+  WriteDrive(DRVB, BLANK_Mastw);
+  WriteDrive(DRVB, STALL_Mastw);
+  WriteDrive(DRVB, DRIVE_Mastw);
+  WriteDrive(DRVB, 0x2180);
+  WriteDrive(DRVB, STATUS_Mastw);
   //==========================================================
 
 
   // DRIVE A
   //==========================================================
-  if (USE_DRIVE_A == 1)
-  {
-    Timer.DelayMs(1);
-    DRVA_RESET = 0;
-    Timer.DelayMs(1);
-    DRVA_SLEEP = 0;
-    Timer.DelayMs(1);
+  Timer.DelayMs(1);
+  DRVA_RESET = 0;
+  Timer.DelayMs(1);
+  DRVA_SLEEP = 0;
+  Timer.DelayMs(1);
 
-    WriteDrive(DRVA, CONTROL_Mastw);
-    WriteDrive(DRVA, TORQUE_Mastw);
-    WriteDrive(DRVA, OFF_Mastw);
-    WriteDrive(DRVA, BLANK_Mastw);
-    WriteDrive(DRVA, STALL_Mastw);
-    WriteDrive(DRVA, DRIVE_Mastw);
-    WriteDrive(DRVA, 0x2180);
-    WriteDrive(DRVA, STATUS_Mastw);
-  }
+  WriteDrive(DRVA, CONTROL_Mastw);
+  WriteDrive(DRVA, TORQUE_Mastw);
+  WriteDrive(DRVA, OFF_Mastw);
+  WriteDrive(DRVA, BLANK_Mastw);
+  WriteDrive(DRVA, STALL_Mastw);
+  WriteDrive(DRVA, DRIVE_Mastw);
+  WriteDrive(DRVA, 0x2180);
+  WriteDrive(DRVA, STATUS_Mastw);
   //==========================================================
 
   DRVA_SC = 0;

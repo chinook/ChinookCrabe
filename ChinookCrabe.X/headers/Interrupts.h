@@ -109,10 +109,10 @@ typedef union
  * | 6        | 2           |                   |
  * | 6        | 3           | Timer 1           |
  * |----------+-------------+-------------------|
- * | 7        | 0           | Input Capture 1   |
- * | 7        | 1           | Input Capture 3   |
- * | 7        | 2           | Input Capture 2   |
- * | 7        | 3           | Input Capture 4   |
+ * | 7        | 0           |                   |
+ * | 7        | 1           |                   |
+ * | 7        | 2           |                   |
+ * | 7        | 3           |                   |
  * +----------+-------------+-------------------+
  * 
  */
@@ -156,25 +156,6 @@ typedef union
 #define S4_INTERRUPT_PRIORITY           ipl4auto    // Used in ISR
 
 #define SPI4_INTERRUPT_SUBPRIORITY      3           // Lowest subpriority
-//===============================================
-
-
-//===============================================
-// Input Capture interrupts priorities and subpriorities
-//===============================================
-#define IC1_INTERRUPT_PRIORITY          7           // Used in ChinookLib function
-#define IC1_INT_PRIORITY                ipl7auto    // Used in ISR
-#define IC2_INTERRUPT_PRIORITY          7           // Used in ChinookLib function
-#define IC2_INT_PRIORITY                ipl7auto    // Used in ISR
-#define IC3_INTERRUPT_PRIORITY          7           // Used in ChinookLib function
-#define IC3_INT_PRIORITY                ipl7auto    // Used in ISR
-#define IC4_INTERRUPT_PRIORITY          7           // Used in ChinookLib function
-#define IC4_INT_PRIORITY                ipl7auto    // Used in ISR
-
-#define IC1_INTERRUPT_SUBPRIORITY       0
-#define IC2_INTERRUPT_SUBPRIORITY       2
-#define IC3_INTERRUPT_SUBPRIORITY       1
-#define IC4_INTERRUPT_SUBPRIORITY       3
 //===============================================
 
 
