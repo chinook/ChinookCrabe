@@ -132,13 +132,13 @@ void AssessButtons (void)
     {
       buttons.chng.bits.steerWheelSw3 = 0;
 
-      if (buttons.buttons.bits.steerWheelSw3)     // If SW1 is pressed
-      {
-        crabLeftZeroMm = leftActPosMm;
-        crabRightZeroMm = rightActPosMm;
-
-        SEND_CALIB_DONE;  // Confirm that the calib is done
-      }
+//      if (buttons.buttons.bits.steerWheelSw3)     // If SW1 is pressed
+//      {
+//        crabLeftZeroMm = leftActPosMm;
+//        crabRightZeroMm = rightActPosMm;
+//
+//        SEND_CALIB_DONE;  // Confirm that the calib is done
+//      }
     }
     // </editor-fold>
 

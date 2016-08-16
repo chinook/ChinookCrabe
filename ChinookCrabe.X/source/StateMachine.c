@@ -206,8 +206,8 @@ void StateInit(void)
 //    mastAngle.previousValue = 0;
 //    mastAngle.currentValue  = 0;
 //  }
-  crabLeftZeroMm  = 367.14;
-  crabRightZeroMm = 367.34;
+  crabLeftZeroMm  = 377.44;
+  crabRightZeroMm = 377.44;
 
   // Init registers for the drive
   InitDriver();
@@ -788,7 +788,7 @@ void StateAcq(void)
     oNewAdcMeasurement = 1;
   }
 
-//  AssessButtons();
+  AssessButtons();
 
 //  UINT32 coreTickRate = Timer.Tic(1500, SCALE_US);
 //  Skadi.GetCmdMsgFifo();
