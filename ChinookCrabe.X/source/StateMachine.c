@@ -271,11 +271,12 @@ void StateManual(void)
               ,oRightInError = 0
               ;
   
+  const float HYSTERESIS = 1.0f;
   float errorPlusLeft, errorPlusRight;
   
   if (oLeftInError)
   {
-    errorPlusLeft = 1.0f;
+    errorPlusLeft = HYSTERESIS;
   }
   else
   {
@@ -284,7 +285,7 @@ void StateManual(void)
   
   if (oRightInError)
   {
-    errorPlusRight = 1.0f;
+    errorPlusRight = HYSTERESIS;
   }
   else
   {
