@@ -47,8 +47,8 @@ const sMmToDeg_t mm2degRel =
 //float  crabLeftZeroMm  = 367.14
 //      ,crabRightZeroMm = 367.34
 //      ;
-float  crabLeftZeroMm  = 370.12
-      ,crabRightZeroMm = 372.38
+float  crabLeftZeroMm  = 373.84003
+      ,crabRightZeroMm = 373.84003
       ;
 
 // Actuator V to mm table
