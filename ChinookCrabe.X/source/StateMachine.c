@@ -267,6 +267,30 @@ void StateManual(void)
 {
   oNewAdcMeasurement = 0;
   
+  static BOOL oLeftInError = 0
+              ,oRightInError = 0
+              ;
+  
+  float errorPlusLeft, errorPlusRight;
+  
+  if (oLeftInError)
+  {
+    errorPlusLeft = 1.0f;
+  }
+  else
+  {
+    errorPlusLeft = 0.0f;
+  }
+  
+  if (oRightInError)
+  {
+    errorPlusRight = 1.0f;
+  }
+  else
+  {
+    errorPlusRight = 0.0f;
+  }
+  
   // Check for limits
   // =====================================
   if (leftActDeg <= ACTUATOR_MIN_DEG)
@@ -310,12 +334,14 @@ void StateManual(void)
   
   // Moving cases
   // =====================================
-  if (AbsFloat(leftActDeg - crabManualCmdDeg) <= CRAB_ERROR)
+  if (AbsFloat(leftActDeg - crabManualCmdDeg) <= (CRAB_ERROR + errorPlusLeft))
   {
+    oLeftInError = 1;
     leftActMoves = NEEDS_TO_STOP;
   }
   else
   {
+    oLeftInError = 0;
     if (leftActDeg > crabManualCmdDeg)
     {
       if (!oManualLeftLowerLim)
@@ -340,12 +366,14 @@ void StateManual(void)
     }
   }
   
-  if (AbsFloat(rightActDeg - crabManualCmdDeg) <= CRAB_ERROR)
+  if (AbsFloat(rightActDeg - crabManualCmdDeg) <= (CRAB_ERROR + errorPlusRight))
   {
+    oRightInError = 1;
     rightActMoves = NEEDS_TO_STOP;
   }
   else
   {
+    oRightInError = 0;
     if (rightActDeg > crabManualCmdDeg)
     {
       if (!oManualRightLowerLim)

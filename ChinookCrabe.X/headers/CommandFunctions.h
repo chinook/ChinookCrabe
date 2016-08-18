@@ -37,7 +37,7 @@
 #define ACTUATOR_MIN_POS            0.116f    // 0.119f for the other
 #define ACTUATOR_MIN_VOLT           0.3f
 
-#define CRAB_ERROR                  0.85f      // Degrees
+#define CRAB_ERROR                  0.1f      // Degrees
 
 
 /*
